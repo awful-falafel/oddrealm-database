@@ -4,7 +4,7 @@ import prepackagedGlossary from './glossary_database.json';
 const API_BASE = 'http://localhost:5000/api';
 
 function App() {
-  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, weapons, tools, gear, food, resources, blocks, stations
+  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, weapons, tools, gear, food, potions, resources, blocks, stations
   const [glossary, setGlossary] = useState(prepackagedGlossary);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -16,6 +16,9 @@ function App() {
 
   // Filters
   const [rarityFilter, setRarityFilter] = useState('all');
+  const [materialFilter, setMaterialFilter] = useState('all');
+  const [slotFilter, setSlotFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [stationFilter, setStationFilter] = useState('all');
 
   // Sorting
@@ -37,6 +40,17 @@ function App() {
     };
     fetchGlossary();
   }, []);
+
+  const resetFilters = (view) => {
+    setCurrentView(view);
+    setSearchQuery('');
+    setSelectedItem(null);
+    setSelectedBlock(null);
+    setRarityFilter('all');
+    setMaterialFilter('all');
+    setSlotFilter('all');
+    setTypeFilter('all');
+  };
 
   // Helper classification methods
   const isShield = (item) => {
@@ -75,6 +89,63 @@ function App() {
     return colors[rarity] || '#9d9d9d';
   };
 
+  const getAttackTypeLabel = (attacksStr) => {
+    if (!attacksStr || attacksStr === 'None') return '-';
+    const lower = attacksStr.toLowerCase();
+    const types = [];
+    if (lower.includes('slash') || lower.includes('cut')) types.push('Slash');
+    if (lower.includes('pierce')) types.push('Pierce');
+    if (lower.includes('blunt') || lower.includes('strike')) types.push('Blunt');
+    
+    if (types.length === 0) {
+      const match = attacksStr.match(/,\s*(Blunt|Slash|Pierce|Physical),/i);
+      if (match) return match[1];
+      return 'Physical';
+    }
+    return types.join(', ');
+  };
+
+  // Lists of options dynamically derived from items in glossary
+  const getMaterialsList = (viewName) => {
+    const items = getFilteredItemsBase(viewName);
+    const materials = ['Wood', 'Stone', 'Copper', 'Bronze', 'Iron', 'Steel', 'Ancient', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Ruby', 'Emerald', 'Bone', 'Leather', 'Wool', 'Cloth'];
+    return materials.filter(m => items.some(item => (item.name || '').toLowerCase().includes(m.toLowerCase())));
+  };
+
+  const getSlotsList = (viewName) => {
+    const items = getFilteredItemsBase(viewName);
+    const slots = new Set();
+    items.forEach(item => {
+      if (item.slots && item.slots !== 'None') {
+        slots.add(item.slots);
+      }
+    });
+    return Array.from(slots);
+  };
+
+  const getTypesList = (viewName) => {
+    const items = getFilteredItemsBase(viewName);
+    if (viewName === 'weapons') {
+      const types = ['Sword', 'Bow', 'Crossbow', 'Dagger', 'Flail', 'Spear', 'Mace', 'Club', 'Sling', 'Scythe', 'Staff', 'Axe', 'Warhammer'];
+      return types.filter(t => items.some(item => (item.name || '').toLowerCase().includes(t.toLowerCase())));
+    }
+    if (viewName === 'tools') {
+      const types = ['Pickaxe', 'Axe', 'Spoon', 'Chisel', 'Needle', 'Knife', 'Hammer', 'Saw', 'Trowel'];
+      return types.filter(t => items.some(item => (item.name || '').toLowerCase().includes(t.toLowerCase())));
+    }
+    if (viewName === 'food') {
+      const types = new Set();
+      items.forEach(item => { if (item.type) types.add(item.type); });
+      return Array.from(types);
+    }
+    if (viewName === 'resources') {
+      const types = new Set();
+      items.forEach(item => { if (item.type) types.add(item.type.replace('tag_item_type_', '')); });
+      return Array.from(types);
+    }
+    return [];
+  };
+
   // Universal Search Handler (supports regex)
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -106,24 +177,22 @@ function App() {
         const itemText = `${item.name} ${item.id} ${item.type} ${item.actions} ${item.slots} ${item.attacks} ${item.rarity} ${item.unlockResearch}`;
         if (testMatch(itemText)) {
           let view = 'resources';
-          let icon = '📦';
           let label = 'Material';
           
           if (isWeapon(item)) {
             view = 'weapons';
-            icon = '🗡️';
             label = 'Weapon';
+          } else if (item.type === 'potion') {
+            view = 'potions';
+            label = 'Potion';
           } else if (item.type === 'tool') {
             view = 'tools';
-            icon = '⛏️';
             label = 'Tool';
           } else if (item.type === 'gear' || item.type === 'trinket' || isShield(item)) {
             view = 'gear';
-            icon = '🛡️';
             label = 'Gear';
           } else if (foodTypes.includes(item.type)) {
             view = 'food';
-            icon = '🍏';
             label = 'Food';
           }
 
@@ -133,7 +202,6 @@ function App() {
             name: item.name,
             type: 'item',
             view,
-            icon,
             details: `${label} • ${item.rarity} • Unlocked by: ${item.unlockResearch || 'None'}`,
             data: item
           });
@@ -152,7 +220,6 @@ function App() {
             name: block.name,
             type: 'block',
             view: 'blocks',
-            icon: block.isStation ? '🛠️' : '🧱',
             details: `Block • ${block.isStation ? 'Crafting Station' : 'Terrain / Wall'} • Unlocked by: ${block.unlockResearch || 'None'}`,
             data: block
           });
@@ -171,7 +238,6 @@ function App() {
             name: station.name,
             type: 'station',
             view: 'stations',
-            icon: '⚙️',
             details: `Workstation • ${station.id}`,
             data: station
           });
@@ -216,20 +282,44 @@ function App() {
     }));
   };
 
-  const getFilteredItems = (viewName) => {
+  const getFilteredItemsBase = (viewName) => {
     if (!glossary.items) return [];
     
     return glossary.items.filter(item => {
-      const matchesRarity = rarityFilter === 'all' || item.rarity === rarityFilter;
-      if (!matchesRarity) return false;
-
       if (viewName === 'weapons') return isWeapon(item);
       if (viewName === 'tools') return item.type === 'tool' && !isWeapon(item) && !isShield(item);
       if (viewName === 'gear') return item.type === 'gear' || item.type === 'trinket' || isShield(item);
       if (viewName === 'food') return foodTypes.includes(item.type);
+      if (viewName === 'potions') return item.type === 'potion';
       if (viewName === 'resources') return resourceTypes.includes(item.type);
-
       return false;
+    });
+  };
+
+  const getFilteredItems = (viewName) => {
+    const baseItems = getFilteredItemsBase(viewName);
+    
+    return baseItems.filter(item => {
+      const matchesRarity = rarityFilter === 'all' || item.rarity === rarityFilter;
+      if (!matchesRarity) return false;
+
+      const matchesMaterial = materialFilter === 'all' || (item.name || '').toLowerCase().includes(materialFilter.toLowerCase());
+      if (!matchesMaterial) return false;
+
+      const matchesSlot = slotFilter === 'all' || item.slots === slotFilter;
+      if (!matchesSlot) return false;
+
+      let matchesType = true;
+      if (typeFilter !== 'all') {
+        if (viewName === 'food') {
+          matchesType = item.type === typeFilter;
+        } else if (viewName === 'resources') {
+          matchesType = item.type.replace('tag_item_type_', '') === typeFilter;
+        } else {
+          matchesType = (item.name || '').toLowerCase().includes(typeFilter.toLowerCase());
+        }
+      }
+      return matchesType;
     });
   };
 
@@ -338,7 +428,7 @@ function App() {
     );
   };
 
-  const foodTypes = ['meal', 'fruit', 'vegetable', 'meat', 'fish', 'fungus', 'alcohol', 'beverage', 'egg', 'milk', 'potion'];
+  const foodTypes = ['meal', 'fruit', 'vegetable', 'meat', 'fish', 'fungus', 'alcohol', 'beverage', 'egg', 'milk'];
   const resourceTypes = ['refined_material', 'ingot', 'ore', 'gem', 'stone', 'wood', 'seed', 'plant_material', 'animal_byproduct', 'remains', 'container', 'garbage', 'soil', 'trinket', 'OnJobDisposedTagObjectID'];
 
   return (
@@ -421,6 +511,16 @@ function App() {
           border-radius: 50%;
           transition: all 0.2s ease;
         }
+        .filter-select {
+          padding: 8px 12px;
+          border-radius: 4px;
+          background: var(--bg-secondary);
+          color: var(--text-primary);
+          border: 1px solid var(--border-glass);
+          outline: none;
+          font-size: 0.8rem;
+          cursor: pointer;
+        }
       `}</style>
 
       {/* SIDEBAR */}
@@ -436,56 +536,62 @@ function App() {
         <div className="nav-menu">
           <button 
             className={`nav-item ${currentView === 'dashboard' ? 'active' : ''}`}
-            onClick={() => { setCurrentView('dashboard'); setSearchQuery(''); }}
+            onClick={() => resetFilters('dashboard')}
           >
             🏰 Dashboard
           </button>
           <button 
             className={`nav-item ${currentView === 'weapons' ? 'active' : ''}`}
-            onClick={() => { setCurrentView('weapons'); setSearchQuery(''); setSelectedItem(null); setRarityFilter('all'); }}
+            onClick={() => resetFilters('weapons')}
           >
             🗡️ Weapons Database
           </button>
           <button 
             className={`nav-item ${currentView === 'tools' ? 'active' : ''}`}
-            onClick={() => { setCurrentView('tools'); setSearchQuery(''); setSelectedItem(null); setRarityFilter('all'); }}
+            onClick={() => resetFilters('tools')}
           >
             ⛏️ Tools Database
           </button>
           <button 
             className={`nav-item ${currentView === 'gear' ? 'active' : ''}`}
-            onClick={() => { setCurrentView('gear'); setSearchQuery(''); setSelectedItem(null); setRarityFilter('all'); }}
+            onClick={() => resetFilters('gear')}
           >
             🛡️ Armor & Gear
           </button>
           <button 
             className={`nav-item ${currentView === 'food' ? 'active' : ''}`}
-            onClick={() => { setCurrentView('food'); setSearchQuery(''); setSelectedItem(null); setRarityFilter('all'); }}
+            onClick={() => resetFilters('food')}
           >
-            🍏 Food & Potions
+            🍏 Food Database
+          </button>
+          <button 
+            className={`nav-item ${currentView === 'potions' ? 'active' : ''}`}
+            onClick={() => resetFilters('potions')}
+          >
+            🧪 Potions & Elixirs
           </button>
           <button 
             className={`nav-item ${currentView === 'resources' ? 'active' : ''}`}
-            onClick={() => { setCurrentView('resources'); setSearchQuery(''); setSelectedItem(null); setRarityFilter('all'); }}
+            onClick={() => resetFilters('resources')}
           >
             📦 Materials & Seeds
           </button>
           <button 
             className={`nav-item ${currentView === 'blocks' ? 'active' : ''}`}
-            onClick={() => { setCurrentView('blocks'); setSearchQuery(''); setSelectedBlock(null); }}
+            onClick={() => resetFilters('blocks')}
           >
             🧱 Blocks & Props
           </button>
           <button 
             className={`nav-item ${currentView === 'stations' ? 'active' : ''}`}
-            onClick={() => { setCurrentView('stations'); setSearchQuery(''); }}
+            onClick={() => resetFilters('stations')}
           >
             🛠️ Crafting Stations
           </button>
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 1.9.0</div>
+          <div>Explorer Version: 2.0.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -510,7 +616,8 @@ function App() {
             {currentView === 'weapons' && '🗡️ Weapons Database'}
             {currentView === 'tools' && '⛏️ Tools Database'}
             {currentView === 'gear' && '🛡️ Armor & Gear'}
-            {currentView === 'food' && '🍏 Food & Potions'}
+            {currentView === 'food' && '🍏 Food Database'}
+            {currentView === 'potions' && '🧪 Potions & Elixirs'}
             {currentView === 'resources' && '📦 Materials & Seeds'}
             {currentView === 'blocks' && '🧱 Blocks & Props'}
             {currentView === 'stations' && '🛠️ Crafting Stations'}
@@ -589,7 +696,16 @@ function App() {
                         className={`search-result-item ${isBlurred ? 'spoiler-blurred-container' : ''}`}
                       >
                         <div className={isBlurred ? 'spoiler-blurred' : ''} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
-                          <span style={{ fontSize: '1.25rem' }}>{result.icon}</span>
+                          {result.type === 'item' || result.type === 'block' ? (
+                            <img 
+                              src={result.data?.iconFilename ? `/game_icons/${result.data.iconFilename}` : `/game_icons/default.png`} 
+                              alt=""
+                              style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }}
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                          ) : (
+                            <span style={{ fontSize: '1.25rem' }}>⚙️</span>
+                          )}
                           <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--accent-cyan)' }}>{result.name}</div>
                             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>{result.details}</div>
@@ -614,8 +730,8 @@ function App() {
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '40px' }}>
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('weapons')}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('weapons')}>
                 <div style={{ fontSize: '2rem' }}>🗡️</div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Weapons</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Swords, bows, crossbows, practice daggers, and combat equipment.</p>
@@ -624,7 +740,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('tools')}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('tools')}>
                 <div style={{ fontSize: '2rem' }}>⛏️</div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Tools</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Axes, pickaxes, hammers, chisels, and harvesting implements.</p>
@@ -633,7 +749,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('gear')}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('gear')}>
                 <div style={{ fontSize: '2rem' }}>🛡️</div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Armor & Gear</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Helmets, chestplates, boots, gauntlets, and defensive shields.</p>
@@ -643,17 +759,26 @@ function App() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '40px' }}>
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('food')}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('food')}>
                 <div style={{ fontSize: '2rem' }}>🍏</div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Food & Potions</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Prepared meals, drinks, alcohols, ingredients, and potions.</p>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Food</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Prepared meals, drinks, raw meats, veggies, alcohols, and raw food ingredients.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {glossary.items?.filter(i => foodTypes.includes(i.type)).length || 0} Consumables
                 </div>
               </div>
 
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('resources')}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('potions')}>
+                <div style={{ fontSize: '2rem' }}>🧪</div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Potions & Elixirs</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Magical draughts, stat boosters, and healing potions.</p>
+                <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                  {glossary.items?.filter(i => i.type === 'potion').length || 0} Potions
+                </div>
+              </div>
+
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('resources')}>
                 <div style={{ fontSize: '2rem' }}>📦</div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Materials & Seeds</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Wood logs, metal ingots, ores, seeds, and raw ingredients.</p>
@@ -663,8 +788,8 @@ function App() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px', marginBottom: '40px' }}>
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('blocks')}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px', marginBottom: '32px' }}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('blocks')}>
                 <div style={{ fontSize: '2rem' }}>🧱</div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Blocks & Props</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Terrain blocks, building walls, furniture, crops, and map layouts.</p>
@@ -673,7 +798,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('stations')}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('stations')}>
                 <div style={{ fontSize: '2rem' }}>🛠️</div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Crafting Stations</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Anvils, stoves, spinning wheels, workbenches, and stills.</p>
@@ -692,16 +817,33 @@ function App() {
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🗡️ Weapons</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Weapons database. Displays physical damage ranges and attack parameters.</p>
+                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Weapons database. Displays physical damage ranges, attack type properties, and unlock nodes.</p>
                 </div>
-                <div>
-                  <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
+                
+                {/* Advanced Multi-Filters */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
                     <option value="all">All Rarities</option>
                     <option value="common">Common</option>
                     <option value="uncommon">Uncommon</option>
                     <option value="rare">Rare</option>
                     <option value="epic">Epic</option>
                     <option value="legendary">Legendary</option>
+                  </select>
+
+                  <select className="filter-select" value={materialFilter} onChange={(e) => setMaterialFilter(e.target.value)}>
+                    <option value="all">All Materials</option>
+                    {getMaterialsList('weapons').map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+
+                  <select className="filter-select" value={slotFilter} onChange={(e) => setSlotFilter(e.target.value)}>
+                    <option value="all">All Slots</option>
+                    {getSlotsList('weapons').map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+
+                  <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                    <option value="all">All Weapon Types</option>
+                    {getTypesList('weapons').map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
               </div>
@@ -715,7 +857,7 @@ function App() {
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('attacks')}>Attack Type</th>
+                      <th style={{ padding: '10px 8px' }}>Attack Type</th>
                       <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value</th>
@@ -757,7 +899,9 @@ function App() {
                           <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.toughness > 0 ? `+${item.toughness}` : '-'}
                           </td>
-                          <td style={{ padding: '8px', color: '#ffc233' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.attacks !== 'None' ? item.attacks : '-'}</td>
+                          <td style={{ padding: '8px', color: '#ffc233', fontWeight: 600 }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {getAttackTypeLabel(item.attacks)}
+                          </td>
                           <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
                           <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
@@ -767,7 +911,7 @@ function App() {
                                     <img 
                                       src={`/game_icons/${r.iconFile}`} 
                                       alt="" 
-                                      style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
+                                      style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
                                       onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                     <span>{r.name}</span>
@@ -823,7 +967,7 @@ function App() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                         <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
-                        <span>{isWeapon(selectedItem) ? 'Weapon' : selectedItem.type}</span>
+                        <span>Weapon</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                         <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
@@ -835,7 +979,7 @@ function App() {
                                   <img 
                                     src={`/game_icons/${r.iconFile}`} 
                                     alt="" 
-                                    style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
+                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
                                     onError={(e) => { e.target.style.display = 'none'; }}
                                   />
                                   <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
@@ -861,9 +1005,13 @@ function App() {
                         <span style={{ color: 'var(--text-muted)' }}>Damage Range:</span>
                         <span style={{ color: '#ff5555', fontWeight: 'bold' }}>{selectedItem.minDamage} - {selectedItem.maxDamage} Dmg</span>
                       </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Attack Classification:</span>
+                        <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{getAttackTypeLabel(selectedItem.attacks)}</span>
+                      </div>
                       {selectedItem.attacks && selectedItem.attacks !== 'None' && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                          <span style={{ color: 'var(--text-muted)' }}>Weapon Attack Type:</span>
+                          <span style={{ color: 'var(--text-muted)' }}>Weapon Attack Speed/Range:</span>
                           <span style={{ color: '#ffc233' }}>{selectedItem.attacks}</span>
                         </div>
                       )}
@@ -902,12 +1050,24 @@ function App() {
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>⛏️ Tools</h1>
                   <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Spoons, pickaxes, axes, needles, chisels, and harvesting implements.</p>
                 </div>
-                <div>
-                  <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
+                
+                {/* Advanced Multi-Filters */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
                     <option value="all">All Rarities</option>
                     <option value="common">Common</option>
                     <option value="uncommon">Uncommon</option>
                     <option value="rare">Rare</option>
+                  </select>
+
+                  <select className="filter-select" value={materialFilter} onChange={(e) => setMaterialFilter(e.target.value)}>
+                    <option value="all">All Materials</option>
+                    {getMaterialsList('tools').map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+
+                  <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                    <option value="all">All Tool Types</option>
+                    {getTypesList('tools').map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
               </div>
@@ -971,7 +1131,7 @@ function App() {
                                     <img 
                                       src={`/game_icons/${r.iconFile}`} 
                                       alt="" 
-                                      style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
+                                      style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
                                       onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                     <span>{r.name}</span>
@@ -1039,7 +1199,7 @@ function App() {
                                   <img 
                                     src={`/game_icons/${r.iconFile}`} 
                                     alt="" 
-                                    style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
+                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
                                     onError={(e) => { e.target.style.display = 'none'; }}
                                   />
                                   <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
@@ -1092,14 +1252,26 @@ function App() {
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🛡️ Armor & Gear</h1>
                   <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Helmets, chestplates, greaves, boots, gauntlets, shields, and rings.</p>
                 </div>
-                <div>
-                  <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
+                
+                {/* Advanced Multi-Filters */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
                     <option value="all">All Rarities</option>
                     <option value="common">Common</option>
                     <option value="uncommon">Uncommon</option>
                     <option value="rare">Rare</option>
                     <option value="epic">Epic</option>
                     <option value="legendary">Legendary</option>
+                  </select>
+
+                  <select className="filter-select" value={materialFilter} onChange={(e) => setMaterialFilter(e.target.value)}>
+                    <option value="all">All Materials</option>
+                    {getMaterialsList('gear').map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+
+                  <select className="filter-select" value={slotFilter} onChange={(e) => setSlotFilter(e.target.value)}>
+                    <option value="all">All Slots</option>
+                    {getSlotsList('gear').map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
               </div>
@@ -1163,7 +1335,7 @@ function App() {
                                     <img 
                                       src={`/game_icons/${r.iconFile}`} 
                                       alt="" 
-                                      style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
+                                      style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
                                       onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                     <span>{r.name}</span>
@@ -1231,7 +1403,7 @@ function App() {
                                   <img 
                                     src={`/game_icons/${r.iconFile}`} 
                                     alt="" 
-                                    style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
+                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
                                     onError={(e) => { e.target.style.display = 'none'; }}
                                   />
                                   <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
@@ -1287,15 +1459,22 @@ function App() {
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🍏 Food & Potions</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Prepared meals, drinks, alcohol, raw ingredients, and magical potions.</p>
+                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🍏 Food Database</h1>
+                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Prepared meals, drinks, alcohol, raw ingredients, and agricultural harvests.</p>
                 </div>
-                <div>
-                  <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
+                
+                {/* Advanced Multi-Filters */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
                     <option value="all">All Rarities</option>
                     <option value="common">Common</option>
                     <option value="uncommon">Uncommon</option>
                     <option value="rare">Rare</option>
+                  </select>
+
+                  <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                    <option value="all">All Food Types</option>
+                    {getTypesList('food').map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
               </div>
@@ -1309,7 +1488,6 @@ function App() {
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('type')}>Type</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
                       <th style={{ padding: '10px 8px' }}>Decay Rule</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness</th>
                       <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
@@ -1348,9 +1526,6 @@ function App() {
                             {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                           </td>
                           <td style={{ padding: '8px', color: 'var(--text-muted)', fontSize: '0.8rem' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.decayInfo !== 'None' ? item.decayInfo : '-'}</td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
-                          </td>
                           <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.toughness > 0 ? `+${item.toughness}` : '-'}
                           </td>
@@ -1363,7 +1538,7 @@ function App() {
                                     <img 
                                       src={`/game_icons/${r.iconFile}`} 
                                       alt="" 
-                                      style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
+                                      style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
                                       onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                     <span>{r.name}</span>
@@ -1380,7 +1555,7 @@ function App() {
                     })}
                     {getSortedItems('food').length === 0 && (
                       <tr>
-                        <td colSpan="10" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
+                        <td colSpan="9" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -1431,7 +1606,7 @@ function App() {
                                   <img 
                                     src={`/game_icons/${r.iconFile}`} 
                                     alt="" 
-                                    style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
+                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
                                     onError={(e) => { e.target.style.display = 'none'; }}
                                   />
                                   <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
@@ -1475,6 +1650,195 @@ function App() {
           </div>
         )}
 
+        {/* VIEW: POTIONS DATABASE */}
+        {currentView === 'potions' && (
+          <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
+              <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🧪 Potions & Elixirs</h1>
+                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Magical booster elixirs, heals, and structural stat enhancers.</p>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
+                    <option value="all">All Rarities</option>
+                    <option value="common">Common</option>
+                    <option value="uncommon">Uncommon</option>
+                    <option value="rare">Rare</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
+                      <th style={{ padding: '10px 8px' }}>Icon</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness</th>
+                      <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getSortedItems('potions').map((item, index) => {
+                      const isBlurred = hideSpoilers && item.rarity === 'legendary';
+                      return (
+                        <tr 
+                          key={item.id} 
+                          id={`row-${item.id}`}
+                          onClick={() => setSelectedItem(item)}
+                          style={{ 
+                            borderBottom: '1px solid rgba(255,255,255,0.03)',
+                            backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
+                            cursor: 'pointer'
+                          }}
+                          className={`${highlightId === item.id ? 'flash-highlight' : ''} ${isBlurred ? 'spoiler-blurred-container' : ''}`}
+                        >
+                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            <img 
+                              src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
+                              alt=""
+                              style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }}
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                          </td>
+                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            <div style={{ fontWeight: 600 }}>{item.name}</div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.id}</div>
+                          </td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
+                          </td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {item.toughness > 0 ? `+${item.toughness}` : '-'}
+                          </td>
+                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
+                          <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {item.unlockResearchList.map((r, i) => (
+                                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <img 
+                                      src={`/game_icons/${r.iconFile}`} 
+                                      alt="" 
+                                      style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
+                                      onError={(e) => { e.target.style.display = 'none'; }}
+                                    />
+                                    <span>{r.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span>{item.unlockResearch || 'None (Start)'}</span>
+                            )}
+                          </td>
+                          <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
+                        </tr>
+                      );
+                    })}
+                    {getSortedItems('potions').length === 0 && (
+                      <tr>
+                        <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* DETAIL DRAWER */}
+            {selectedItem && (
+              <div className="card" style={{ width: '380px', borderLeft: '2px solid var(--border-glass)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', background: 'var(--bg-secondary)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Item Inspector</span>
+                  <button onClick={() => setSelectedItem(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
+                </div>
+
+                {hideSpoilers && selectedItem.rarity === 'legendary' ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', border: '1px dashed #ff8000', borderRadius: '8px', background: 'rgba(255, 128, 0, 0.03)' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
+                    <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
+                      Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ width: '64px', height: '64px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '6px' }}>
+                        <img src={selectedItem.iconFilename ? `/game_icons/${selectedItem.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} alt="" />
+                      </div>
+                      <div>
+                        <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedItem.name}</h2>
+                        <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{selectedItem.id}</span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
+                        <span>Potion</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
+                        <span>
+                          {selectedItem.unlockResearchList && selectedItem.unlockResearchList.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                              {selectedItem.unlockResearchList.map((r, i) => (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <img 
+                                    src={`/game_icons/${r.iconFile}`} 
+                                    alt="" 
+                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
+                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                  />
+                                  <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedItem.unlockResearch || 'None (Start)'}</span>
+                          )}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
+                        <span style={{ fontWeight: 600, color: getRarityColor(selectedItem.rarity) }}>
+                          {selectedItem.rarity.charAt(0).toUpperCase() + selectedItem.rarity.slice(1)}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Value:</span>
+                        <span style={{ color: 'var(--accent-cyan)' }}>{selectedItem.buyValue} Ren</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Stack Size:</span>
+                        <span>{selectedItem.stackSize} items</span>
+                      </div>
+                      {selectedItem.toughness > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Toughness:</span>
+                          <span style={{ color: '#88aaff', fontWeight: 'bold' }}>+{selectedItem.toughness}</span>
+                        </div>
+                      )}
+                      {selectedItem.actions && selectedItem.actions !== 'None' && (
+                        <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                          <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
+                          <div>{renderEffectBadges(selectedItem.actions)}</div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* VIEW: RESOURCES DATABASE */}
         {currentView === 'resources' && (
           <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
@@ -1484,12 +1848,19 @@ function App() {
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>📦 Materials & Seeds</h1>
                   <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Wood, ingots, raw ores, agricultural seeds, refined building materials, and drops.</p>
                 </div>
-                <div>
-                  <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
+                
+                {/* Advanced Multi-Filters */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
                     <option value="all">All Rarities</option>
                     <option value="common">Common</option>
                     <option value="uncommon">Uncommon</option>
                     <option value="rare">Rare</option>
+                  </select>
+
+                  <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                    <option value="all">All Material Types</option>
+                    {getTypesList('resources').map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
               </div>
@@ -1557,7 +1928,7 @@ function App() {
                                     <img 
                                       src={`/game_icons/${r.iconFile}`} 
                                       alt="" 
-                                      style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
+                                      style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
                                       onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                     <span>{r.name}</span>
@@ -1625,7 +1996,7 @@ function App() {
                                   <img 
                                     src={`/game_icons/${r.iconFile}`} 
                                     alt="" 
-                                    style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
+                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
                                     onError={(e) => { e.target.style.display = 'none'; }}
                                   />
                                   <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
@@ -1732,7 +2103,7 @@ function App() {
                                   <img 
                                     src={`/game_icons/${r.iconFile}`} 
                                     alt="" 
-                                    style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
+                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
                                     onError={(e) => { e.target.style.display = 'none'; }}
                                   />
                                   <span>{r.name}</span>
@@ -1790,8 +2161,8 @@ function App() {
                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <img 
                                 src={`/game_icons/${r.iconFile}`} 
-                                      alt="" 
-                                style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
+                                alt="" 
+                                style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
                                 onError={(e) => { e.target.style.display = 'none'; }}
                               />
                               <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>

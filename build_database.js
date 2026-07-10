@@ -328,6 +328,7 @@ if (fs.existsSync(itemsDir)) {
              if (targetId === 'attribute_source_id' || targetId === 'source_id' || targetId === 'SourceID') return;
 
              const amountVal = parseInt(amountMatch[1]);
+             if (amountVal === 0) return; // Skip 0-amount actions/stats
              if (targetId === 'attribute_toughness') {
                toughness = amountVal;
                return; // Do not add to actionsList
