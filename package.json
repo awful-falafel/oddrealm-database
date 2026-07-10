@@ -9,6 +9,7 @@
     "build": "vite build",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist -a",
+    "sync-game-data": "node sync_game_data.js",
     "lint": "oxlint",
     "preview": "vite preview"
   },
