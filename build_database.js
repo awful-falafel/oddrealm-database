@@ -214,6 +214,35 @@ if (fs.existsSync(blueprintsDir)) {
   });
 }
 
+const resolveResearchList = (id) => {
+  const keys = blueprintResearchMap[id] || [];
+  return keys.map(key => {
+    const name = researchNamesMap[key] || key.replace('research_', '').replace(/_/g, ' ');
+    const normKey = key.toLowerCase();
+    
+    // Find matching icon file
+    let iconFile = 'sp_research_basics0.png'; // default fallback
+    try {
+      const files = fs.readdirSync(publicIconsDir);
+      for (const file of files) {
+        const normFile = file.toLowerCase().replace(/\.png$/i, '');
+        if (
+          normFile === normKey || 
+          normFile === `${normKey}0` || 
+          normFile === `${normKey}1` ||
+          normFile === normKey.replace('research_', 'sp_research_') ||
+          normFile === `${normKey.replace('research_', 'sp_research_')}0` ||
+          normFile === `${normKey.replace('research_', 'sp_research_')}1`
+        ) {
+          iconFile = file;
+          break;
+        }
+      }
+    } catch(e){}
+    return { name, iconFile };
+  });
+};
+
 console.log('Compiling Items and Weapons...');
 const items = [];
 if (fs.existsSync(itemsDir)) {
@@ -391,6 +420,10 @@ if (fs.existsSync(itemsDir)) {
         }
       }
 
+      // Resolve unlocking research nodes
+      const rList = resolveResearchList(id);
+      const unlockResearch = rList.map(r => r.name).join(', ') || 'None (Start)';
+
       items.push({
         id,
         name,
@@ -407,7 +440,9 @@ if (fs.existsSync(itemsDir)) {
         maxDamage,
         toughness,
         actions: actionsList.join(', ') || 'None',
-        iconFilename
+        iconFilename,
+        unlockResearch,
+        unlockResearchList: rList
       });
     } catch (e) {
       console.error(`Failed parsing item ${file}:`, e.message);
@@ -523,9 +558,8 @@ if (fs.existsSync(blocksDir)) {
       ) || id.includes('bench') || id.includes('anvil') || id.includes('stove') || id.includes('furnace') || id.includes('well') || id.includes('distillery') || id.includes('butcher') || id.includes('loom') || id.includes('table') || id.includes('mat') || id.includes('basket') || id.includes('pot') || id.includes('bed') || id.includes('container') || id.includes('box') || id.includes('chest') || id.includes('shelf') || id.includes('rack') || id.includes('trough') || id.includes('dummy') || id.includes('pool') || id.includes('rostrum');
 
       // Resolve unlocking research nodes
-      const researchKeys = blueprintResearchMap[id] || [];
-      const researchNames = researchKeys.map(key => researchNamesMap[key] || key.replace('research_', '').replace(/_/g, ' '));
-      const unlockResearch = researchNames.join(', ') || 'None (Start)';
+      const rList = resolveResearchList(id);
+      const unlockResearch = rList.map(r => r.name).join(', ') || 'None (Start)';
 
       blocks.push({
         id,
@@ -537,7 +571,8 @@ if (fs.existsSync(blocksDir)) {
         textureY: visualsObj.textureY,
         iconFilename,
         isStation,
-        unlockResearch
+        unlockResearch,
+        unlockResearchList: rList
       });
     } catch(e){}
   });
