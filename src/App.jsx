@@ -65,7 +65,8 @@ function App() {
   const isShield = (item) => {
     const name = (item.name || '').toLowerCase();
     const id = (item.id || '').toLowerCase();
-    return name.includes('shield') || name.includes('buckler') || id.includes('shield') || id.includes('buckler');
+    return name.includes('shield') || name.includes('buckler') || name.includes('bfs') || name.includes('vanguard') ||
+           id.includes('shield') || id.includes('buckler') || id.includes('bfs') || id.includes('vanguard');
   };
 
   const isWeapon = (item) => {
@@ -75,6 +76,11 @@ function App() {
     const name = (item.name || '').toLowerCase();
     const id = (item.id || '').toLowerCase();
     const research = (item.unlockResearch || '').toLowerCase();
+
+    // Specific exceptions for weapons that are incorrectly classified
+    if (name.includes('twisted steel') || name.includes('xanatos') || name.includes('axeward') || name.includes("happy cat's kris") || name.includes("loth loth's stick")) {
+      return true;
+    }
 
     // Heuristics based on research nodes
     if (research.includes('weapon') || research.includes('marksmanship')) {
@@ -90,7 +96,8 @@ function App() {
       'atlatl', 'sling', 'bolas', 'whip', 'orb', 'scythe', 'staff', 'macuahuitl', 'gladius', 
       'kukri', 'blade', 'vanguard', 'thresk', 'rapier', 'greatsword', 'claymore', 'katana', 
       'lances', 'lance', 'trident', 'morningstar', 'cudgel', 'bastard', 'practice', 'atlatl', 
-      'pointy stick', 'war axe', 'battle axe', 'battleaxe', 'warhammer', 'war hammer'
+      'pointy stick', 'war axe', 'battle axe', 'battleaxe', 'warhammer', 'war hammer',
+      'kris', 'axeward', 'stick', '1h', '2h'
     ];
 
     return weaponKeywords.some(kw => name.includes(kw) || id.includes(kw));
