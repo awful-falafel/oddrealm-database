@@ -625,7 +625,9 @@ function App() {
       {/* SIDEBAR */}
       <div className="sidebar">
         <div className="logo-container">
-          <div className="logo-icon">📚</div>
+          <div className="logo-icon" style={{ padding: '4px', background: 'var(--bg-primary)' }}>
+            <img src="/game_icons/sp_adepts_aeternum_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+          </div>
           <div>
             <div className="logo-text">Odd Realm</div>
             <div className="logo-subtext">Database Explorer</div>
@@ -636,61 +638,79 @@ function App() {
           <button 
             className={`nav-item ${currentView === 'dashboard' ? 'active' : ''}`}
             onClick={() => resetFilters('dashboard')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            🏰 Dashboard
+            <img src="/game_icons/sp_adepts_aeternum_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Dashboard</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'weapons' ? 'active' : ''}`}
             onClick={() => resetFilters('weapons')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            🗡️ Weapons Database
+            <img src="/game_icons/sp_blade_of_brian_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Weapons Database</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'tools' ? 'active' : ''}`}
             onClick={() => resetFilters('tools')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            ⛏️ Tools Database
+            <img src="/game_icons/sp_iron_pickaxe_two_hand_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Tools Database</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'gear' ? 'active' : ''}`}
             onClick={() => resetFilters('gear')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            🛡️ Armor & Gear
+            <img src="/game_icons/sp_bronze_breastplate_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Armor & Gear</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'food' ? 'active' : ''}`}
             onClick={() => resetFilters('food')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            🍏 Food Database
+            <img src="/game_icons/sp_apple_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Food Database</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'potions' ? 'active' : ''}`}
             onClick={() => resetFilters('potions')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            🧪 Potions & Elixirs
+            <img src="/game_icons/sp_health_potion_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Potions & Elixirs</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'resources' ? 'active' : ''}`}
             onClick={() => resetFilters('resources')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            📦 Materials & Seeds
+            <img src="/game_icons/sp_iron_ingot_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Materials & Seeds</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'blocks' ? 'active' : ''}`}
             onClick={() => resetFilters('blocks')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            🧱 Blocks & Props
+            <img src="/game_icons/sp_block_clay_brick_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Blocks & Props</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'stations' ? 'active' : ''}`}
             onClick={() => resetFilters('stations')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            🛠️ Crafting Stations
+            <img src="/game_icons/sp_iron_anvil_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Crafting Stations</span>
           </button>
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 2.3.0</div>
+          <div>Explorer Version: 2.4.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -710,16 +730,16 @@ function App() {
           backdropFilter: 'blur(10px)',
           zIndex: 10
         }}>
-          <div style={{ color: 'var(--accent-cyan)', fontSize: '0.9rem', fontWeight: 600, fontFamily: 'var(--font-header)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            {currentView === 'dashboard' && '🏰 Dashboard'}
-            {currentView === 'weapons' && '🗡️ Weapons Database'}
-            {currentView === 'tools' && '⛏️ Tools Database'}
-            {currentView === 'gear' && '🛡️ Armor & Gear'}
-            {currentView === 'food' && '🍏 Food Database'}
-            {currentView === 'potions' && '🧪 Potions & Elixirs'}
-            {currentView === 'resources' && '📦 Materials & Seeds'}
-            {currentView === 'blocks' && '🧱 Blocks & Props'}
-            {currentView === 'stations' && '🛠️ Crafting Stations'}
+          <div style={{ color: 'var(--accent-cyan)', fontSize: '0.9rem', fontWeight: 600, fontFamily: 'var(--font-header)', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {currentView === 'dashboard' && <><img src="/game_icons/sp_adepts_aeternum_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Dashboard</>}
+            {currentView === 'weapons' && <><img src="/game_icons/sp_blade_of_brian_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Weapons Database</>}
+            {currentView === 'tools' && <><img src="/game_icons/sp_iron_pickaxe_two_hand_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Tools Database</>}
+            {currentView === 'gear' && <><img src="/game_icons/sp_bronze_breastplate_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Armor & Gear</>}
+            {currentView === 'food' && <><img src="/game_icons/sp_apple_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Food Database</>}
+            {currentView === 'potions' && <><img src="/game_icons/sp_health_potion_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Potions & Elixirs</>}
+            {currentView === 'resources' && <><img src="/game_icons/sp_iron_ingot_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Materials & Seeds</>}
+            {currentView === 'blocks' && <><img src="/game_icons/sp_block_clay_brick_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Blocks & Props</>}
+            {currentView === 'stations' && <><img src="/game_icons/sp_iron_anvil_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Crafting Stations</>}
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -853,8 +873,10 @@ function App() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '32px' }}>
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('weapons')}>
-                <div style={{ fontSize: '2rem' }}>🗡️</div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Weapons</h3>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_blade_of_brian_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Weapons</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Swords, bows, crossbows, practice daggers, and combat equipment.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {glossary.items?.filter(isWeapon).length || 0} Registered Weapons
@@ -862,8 +884,10 @@ function App() {
               </div>
 
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('tools')}>
-                <div style={{ fontSize: '2rem' }}>⛏️</div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Tools</h3>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_iron_pickaxe_two_hand_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Tools</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Axes, pickaxes, hammers, chisels, and harvesting implements.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {glossary.items?.filter(i => i.type === 'tool' && !isWeapon(i) && !isShield(i)).length || 0} Registered Tools
@@ -871,8 +895,10 @@ function App() {
               </div>
 
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('gear')}>
-                <div style={{ fontSize: '2rem' }}>🛡️</div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Armor & Gear</h3>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_bronze_breastplate_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Armor & Gear</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Helmets, chestplates, boots, gauntlets, and defensive shields.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {glossary.items?.filter(i => i.type === 'gear' || i.type === 'trinket' || isShield(i)).length || 0} Armor & Shield pieces
@@ -882,8 +908,10 @@ function App() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '32px' }}>
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('food')}>
-                <div style={{ fontSize: '2rem' }}>🍏</div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Food</h3>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_apple_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Food</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Prepared meals, drinks, raw meats, veggies, alcohols, and raw food ingredients.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {glossary.items?.filter(i => foodTypes.includes(i.type)).length || 0} Consumables
@@ -891,8 +919,10 @@ function App() {
               </div>
 
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('potions')}>
-                <div style={{ fontSize: '2rem' }}>🧪</div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Potions & Elixirs</h3>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_health_potion_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Potions & Elixirs</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Magical draughts, stat boosters, and healing potions.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {glossary.items?.filter(i => i.type === 'potion').length || 0} Potions
@@ -900,8 +930,10 @@ function App() {
               </div>
 
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('resources')}>
-                <div style={{ fontSize: '2rem' }}>📦</div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Materials & Seeds</h3>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_iron_ingot_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Materials & Seeds</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Wood logs, metal ingots, ores, seeds, and raw ingredients.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {glossary.items?.filter(i => resourceTypes.includes(i.type)).length || 0} Materials
@@ -911,8 +943,10 @@ function App() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px', marginBottom: '32px' }}>
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('blocks')}>
-                <div style={{ fontSize: '2rem' }}>🧱</div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Blocks & Props</h3>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_block_clay_brick_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Blocks & Props</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Terrain blocks, building walls, furniture, crops, and map layouts.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {glossary.blocks?.length || 0} Registered Blocks
@@ -920,8 +954,10 @@ function App() {
               </div>
 
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('stations')}>
-                <div style={{ fontSize: '2rem' }}>🛠️</div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Crafting Stations</h3>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_iron_anvil_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Crafting Stations</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Anvils, stoves, spinning wheels, workbenches, and stills.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {glossary.craftingStations?.length || 0} Workstations
@@ -936,9 +972,14 @@ function App() {
           <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🗡️ Weapons</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Weapons database. Displays physical damage ranges, attack type properties, and unlock nodes.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                    <img src="/game_icons/sp_blade_of_brian_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                  </div>
+                  <div>
+                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Weapons</h1>
+                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Weapons database. Displays physical damage ranges, attack type properties, and unlock nodes.</p>
+                  </div>
                 </div>
                 
                 {/* Advanced Multi-Filters */}
@@ -1067,9 +1108,14 @@ function App() {
           <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>⛏️ Tools</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Spoons, pickaxes, axes, needles, chisels, and harvesting implements.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                    <img src="/game_icons/sp_iron_pickaxe_two_hand_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                  </div>
+                  <div>
+                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Tools</h1>
+                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Spoons, pickaxes, axes, needles, chisels, and harvesting implements.</p>
+                  </div>
                 </div>
                 
                 {/* Advanced Multi-Filters */}
@@ -1187,9 +1233,14 @@ function App() {
           <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🛡️ Armor & Gear</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Helmets, chestplates, greaves, boots, gauntlets, shields, and rings.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                    <img src="/game_icons/sp_bronze_breastplate_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                  </div>
+                  <div>
+                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Armor & Gear</h1>
+                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Helmets, chestplates, greaves, boots, gauntlets, shields, and rings.</p>
+                  </div>
                 </div>
                 
                 {/* Advanced Multi-Filters */}
@@ -1309,9 +1360,14 @@ function App() {
           <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🍏 Food Database</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Prepared meals, drinks, alcohol, raw ingredients, and agricultural harvests.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                    <img src="/game_icons/sp_apple_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                  </div>
+                  <div>
+                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Food Database</h1>
+                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Prepared meals, drinks, alcohol, raw ingredients, and agricultural harvests.</p>
+                  </div>
                 </div>
                 
                 {/* Advanced Multi-Filters */}
@@ -1424,9 +1480,14 @@ function App() {
           <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🧪 Potions & Elixirs</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Magical booster elixirs, heals, and structural stat enhancers.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                    <img src="/game_icons/sp_health_potion_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                  </div>
+                  <div>
+                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Potions & Elixirs</h1>
+                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Magical booster elixirs, heals, and structural stat enhancers.</p>
+                  </div>
                 </div>
                 
                 <div style={{ display: 'flex', gap: '10px' }}>
@@ -1529,9 +1590,14 @@ function App() {
           <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>📦 Materials & Seeds</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Wood, ingots, raw ores, agricultural seeds, refined building materials, and drops.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                    <img src="/game_icons/sp_iron_ingot_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                  </div>
+                  <div>
+                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Materials & Seeds</h1>
+                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Wood, ingots, raw ores, agricultural seeds, refined building materials, and drops.</p>
+                  </div>
                 </div>
                 
                 {/* Advanced Multi-Filters */}
@@ -1648,9 +1714,14 @@ function App() {
           <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🧱 Blocks & Props database</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Reference base game room quality, pathing movement costs, and research locks.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                    <img src="/game_icons/sp_block_clay_brick_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                  </div>
+                  <div>
+                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Blocks & Props database</h1>
+                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Reference base game room quality, pathing movement costs, and research locks.</p>
+                  </div>
                 </div>
                 <div>
                   <select value={stationFilter} onChange={(e) => setStationFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
@@ -1803,15 +1874,24 @@ function App() {
         {currentView === 'stations' && (
           <div style={{ padding: '32px', overflowY: 'auto', flex: 1 }}>
             <div className="content-header" style={{ marginBottom: '24px' }}>
-              <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🛠️ Crafting Stations directory</h1>
-              <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Listing of functional stations in the game database where settlers construct items.</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_iron_anvil_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <div>
+                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Crafting Stations directory</h1>
+                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Listing of functional stations in the game database where settlers construct items.</p>
+                </div>
+              </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
               {glossary.craftingStations?.map(station => (
                 <div key={station.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '8px', border: '1px solid var(--border-glass)', padding: '16px' }}>
-                  <div style={{ fontSize: '2rem' }}>⚙️</div>
-                  <h4 style={{ fontFamily: 'var(--font-sans)', color: 'var(--accent-cyan)', fontSize: '1.1rem', margin: 0 }}>{station.name}</h4>
+                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                    <img src="/game_icons/sp_iron_anvil_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                  </div>
+                  <h4 style={{ fontFamily: 'var(--font-sans)', color: 'var(--accent-cyan)', fontSize: '1.1rem', margin: '4px 0 0 0' }}>{station.name}</h4>
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{station.id}</span>
                 </div>
               ))}
