@@ -4,7 +4,7 @@ import prepackagedGlossary from './glossary_database.json';
 const API_BASE = 'http://localhost:5000/api';
 
 function App() {
-  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, tools, gear, food, resources, blocks, stations
+  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, weapons, tools, gear, food, resources, blocks, stations
   const [glossary, setGlossary] = useState(prepackagedGlossary);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -42,7 +42,7 @@ function App() {
     }));
   };
 
-  const getFilteredItems = (typesList) => {
+  const getFilteredItems = (viewName) => {
     if (!glossary.items) return [];
     
     return glossary.items.filter(item => {
@@ -50,15 +50,32 @@ function App() {
         item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.id?.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesType = typesList.includes(item.type);
       const matchesRarity = rarityFilter === 'all' || item.rarity === rarityFilter;
+      if (!matchesSearch || !matchesRarity) return false;
 
-      return matchesSearch && matchesType && matchesRarity;
+      // Classify views
+      if (viewName === 'weapons') {
+        return item.type === 'tool' && item.maxDamage > 0;
+      }
+      if (viewName === 'tools') {
+        return item.type === 'tool' && (item.maxDamage === 0 || !item.maxDamage);
+      }
+      if (viewName === 'gear') {
+        return item.type === 'gear' || item.type === 'trinket';
+      }
+      if (viewName === 'food') {
+        return foodTypes.includes(item.type);
+      }
+      if (viewName === 'resources') {
+        return resourceTypes.includes(item.type);
+      }
+
+      return false;
     });
   };
 
-  const getSortedItems = (typesList) => {
-    const filtered = getFilteredItems(typesList);
+  const getSortedItems = (viewName) => {
+    const filtered = getFilteredItems(viewName);
     return [...filtered].sort((a, b) => {
       let valA = a[itemsSort.field] ?? '';
       let valB = b[itemsSort.field] ?? '';
@@ -152,10 +169,16 @@ function App() {
             🏰 Dashboard
           </button>
           <button 
+            className={`nav-item ${currentView === 'weapons' ? 'active' : ''}`}
+            onClick={() => { setCurrentView('weapons'); setSearchQuery(''); setSelectedItem(null); setRarityFilter('all'); }}
+          >
+            🗡️ Weapons Database
+          </button>
+          <button 
             className={`nav-item ${currentView === 'tools' ? 'active' : ''}`}
             onClick={() => { setCurrentView('tools'); setSearchQuery(''); setSelectedItem(null); setRarityFilter('all'); }}
           >
-            ⛏️ Tools & Weapons
+            ⛏️ Tools Database
           </button>
           <button 
             className={`nav-item ${currentView === 'gear' ? 'active' : ''}`}
@@ -190,7 +213,7 @@ function App() {
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 1.2.0</div>
+          <div>Explorer Version: 1.3.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -209,29 +232,40 @@ function App() {
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('weapons')}>
+                <div style={{ fontSize: '2rem' }}>🗡️</div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Weapons</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Swords, bows, crossbows, practice daggers, and combat equipment.</p>
+                <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                  {glossary.items?.filter(i => i.type === 'tool' && i.maxDamage > 0).length || 0} Registered Weapons
+                </div>
+              </div>
+
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('tools')}>
                 <div style={{ fontSize: '2rem' }}>⛏️</div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Tools & Weapons</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Axes, pickaxes, swords, bows, hammers, and task tools.</p>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Tools</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Axes, pickaxes, hammers, chisels, and harvesting implements.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.items?.filter(i => i.type === 'tool').length || 0} Registered Tools
+                  {glossary.items?.filter(i => i.type === 'tool' && (!i.maxDamage || i.maxDamage === 0)).length || 0} Registered Tools
                 </div>
               </div>
 
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('gear')}>
                 <div style={{ fontSize: '2rem' }}>🛡️</div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Armor & Gear</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Helmets, chestplates, boots, gloves, and shields.</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Helmets, chestplates, boots, gauntlets, and defensive shields.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.items?.filter(i => i.type === 'gear').length || 0} Registered Gear
+                  {glossary.items?.filter(i => i.type === 'gear' || i.type === 'trinket').length || 0} Armor pieces
                 </div>
               </div>
+            </div>
 
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '40px' }}>
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('food')}>
                 <div style={{ fontSize: '2rem' }}>🍏</div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Food & Potions</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Meals, raw ingredients, alcohols, and utility potions.</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Prepared meals, drinks, alcohols, ingredients, and potions.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {glossary.items?.filter(i => foodTypes.includes(i.type)).length || 0} Consumables
                 </div>
@@ -240,7 +274,7 @@ function App() {
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('resources')}>
                 <div style={{ fontSize: '2rem' }}>📦</div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Materials & Seeds</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Wood logs, metal ingots, stone, agricultural seeds, and raw resources.</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Wood logs, metal ingots, ores, seeds, and raw ingredients.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {glossary.items?.filter(i => resourceTypes.includes(i.type)).length || 0} Materials
                 </div>
@@ -251,7 +285,7 @@ function App() {
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('blocks')}>
                 <div style={{ fontSize: '2rem' }}>🧱</div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Blocks & Props</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Map blocks, building walls, furniture, crops, and architectural decorations.</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Terrain blocks, building walls, furniture, crops, and map layouts.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
                   {glossary.blocks?.length || 0} Registered Blocks
                 </div>
@@ -260,33 +294,23 @@ function App() {
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentView('stations')}>
                 <div style={{ fontSize: '2rem' }}>🛠️</div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Crafting Stations</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Workbenches, anvils, stoves, stills, and functional workstation blocks.</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Anvils, stoves, spinning wheels, workbenches, and stills.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.craftingStations?.length || 0} Crafting Stations
+                  {glossary.craftingStations?.length || 0} Workstations
                 </div>
               </div>
-            </div>
-
-            <div className="card">
-              <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginBottom: '16px' }}>📖 Database Usage Tips</h3>
-              <ul style={{ color: 'var(--text-secondary)', lineHeight: '1.8', paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <li><strong>Search Bar:</strong> Use the search bar inside any catalog tab to filter entities instantly by name or ID.</li>
-                <li><strong>Interactive Inspector:</strong> Click on any row to open the full item/block properties sidebar drawer.</li>
-                <li><strong>Sort Columns:</strong> Click on column headers (such as Damage, Rarity, Value) to sort the catalogs dynamically.</li>
-                <li><strong>Offline Capability:</strong> This explorer packs all values directly. It is designed to work fully offline and serverless.</li>
-              </ul>
             </div>
           </div>
         )}
 
-        {/* VIEW: TOOLS DATABASE */}
-        {currentView === 'tools' && (
+        {/* VIEW: WEAPONS DATABASE */}
+        {currentView === 'weapons' && (
           <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>⛏️ Tools & Weapons</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Weapons, pickaxes, woodcutter axes, hammers, and specialized task tools.</p>
+                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🗡️ Weapons</h1>
+                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Items used in combat, displaying physical damage parameters and attack techniques.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
@@ -299,7 +323,7 @@ function App() {
                   </select>
                   <input 
                     type="text" 
-                    placeholder="Search tools..." 
+                    placeholder="Search weapons..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{ width: '220px', padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}
@@ -314,14 +338,14 @@ function App() {
                       <th style={{ padding: '10px 8px' }}>Icon</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Max Dmg</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('attacks')}>Attack Type</th>
                       <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {getSortedItems(['tool']).map((item, index) => (
+                    {getSortedItems('weapons').map((item, index) => (
                       <tr 
                         key={item.id} 
                         onClick={() => setSelectedItem(item)}
@@ -346,13 +370,13 @@ function App() {
                         <td style={{ padding: '8px', fontWeight: 600, color: { common: '#9d9d9d', uncommon: '#1eff00', rare: '#0070ff', epic: '#a335ee', legendary: '#ff8000' }[item.rarity] || '#9d9d9d' }}>
                           {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                         </td>
-                        <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }}>{item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}</td>
+                        <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }}>{`${item.minDamage}-${item.maxDamage}`}</td>
                         <td style={{ padding: '8px', color: '#ffc233' }}>{item.attacks !== 'None' ? item.attacks : '-'}</td>
                         <td style={{ padding: '8px', color: '#88ffaa', fontSize: '0.8rem' }}>{formatEffects(item.actions)}</td>
                         <td style={{ padding: '8px', color: 'var(--accent-cyan)' }}>{item.buyValue} Ren</td>
                       </tr>
                     ))}
-                    {getSortedItems(['tool']).length === 0 && (
+                    {getSortedItems('weapons').length === 0 && (
                       <tr>
                         <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
                       </tr>
@@ -383,7 +407,147 @@ function App() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
-                    <span>{selectedItem.type.replace('tag_item_type_', '')}</span>
+                    <span>Weapon</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
+                    <span style={{ fontWeight: 600, color: { common: '#9d9d9d', uncommon: '#1eff00', rare: '#0070ff', epic: '#a335ee', legendary: '#ff8000' }[selectedItem.rarity] || '#9d9d9d' }}>
+                      {selectedItem.rarity.charAt(0).toUpperCase() + selectedItem.rarity.slice(1)}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Value:</span>
+                    <span style={{ color: 'var(--accent-cyan)' }}>{selectedItem.buyValue} Ren</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Damage Range:</span>
+                    <span style={{ color: '#ff5555', fontWeight: 'bold' }}>{selectedItem.minDamage} - {selectedItem.maxDamage} Dmg</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Weapon Attack Type:</span>
+                    <span style={{ color: '#ffc233' }}>{selectedItem.attacks}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Equip Slots:</span>
+                    <span>{selectedItem.slots}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Stack Size:</span>
+                    <span>{selectedItem.stackSize} items</span>
+                  </div>
+                  {selectedItem.actions && selectedItem.actions !== 'None' && (
+                    <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                      <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
+                      <div style={{ color: '#88ffaa', fontSize: '0.85rem' }}>
+                        {selectedItem.actions.split(', ').filter(act => !act.includes('SourceID') && !act.includes('Source')).join(', ')}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* VIEW: TOOLS DATABASE */}
+        {currentView === 'tools' && (
+          <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
+              <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>⛏️ Tools</h1>
+                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Items used for resource gathering and production tasks. These do not have combat damage values.</p>
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
+                    <option value="all">All Rarities</option>
+                    <option value="common">Common</option>
+                    <option value="uncommon">Uncommon</option>
+                    <option value="rare">Rare</option>
+                  </select>
+                  <input 
+                    type="text" 
+                    placeholder="Search tools..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{ width: '220px', padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
+                      <th style={{ padding: '10px 8px' }}>Icon</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
+                      <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getSortedItems('tools').map((item, index) => (
+                      <tr 
+                        key={item.id} 
+                        onClick={() => setSelectedItem(item)}
+                        style={{ 
+                          borderBottom: '1px solid rgba(255,255,255,0.03)',
+                          backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <td style={{ padding: '8px' }}>
+                          <img 
+                            src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
+                            alt=""
+                            style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }}
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                        </td>
+                        <td style={{ padding: '8px' }}>
+                          <div style={{ fontWeight: 600 }}>{item.name}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.id}</div>
+                        </td>
+                        <td style={{ padding: '8px', fontWeight: 600, color: { common: '#9d9d9d', uncommon: '#1eff00', rare: '#0070ff', epic: '#a335ee', legendary: '#ff8000' }[item.rarity] || '#9d9d9d' }}>
+                          {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
+                        </td>
+                        <td style={{ padding: '8px', color: '#88ffaa', fontSize: '0.8rem' }}>{formatEffects(item.actions)}</td>
+                        <td style={{ padding: '8px', color: 'var(--accent-cyan)' }}>{item.buyValue} Ren</td>
+                      </tr>
+                    ))}
+                    {getSortedItems('tools').length === 0 && (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* DETAIL DRAWER */}
+            {selectedItem && (
+              <div className="card" style={{ width: '380px', borderLeft: '2px solid var(--border-glass)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', background: 'var(--bg-secondary)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Item Inspector</span>
+                  <button onClick={() => setSelectedItem(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ width: '64px', height: '64px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '6px' }}>
+                    <img src={selectedItem.iconFilename ? `/game_icons/${selectedItem.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} alt="" />
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedItem.name}</h2>
+                    <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{selectedItem.id}</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
+                    <span>Tool</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
@@ -403,28 +567,6 @@ function App() {
                     <span style={{ color: 'var(--text-muted)' }}>Equip Slots:</span>
                     <span>{selectedItem.slots}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Decay Rule:</span>
-                    <span>{selectedItem.decayInfo}</span>
-                  </div>
-                  {selectedItem.maxDamage > 0 && (
-                    <>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Damage Range:</span>
-                        <span style={{ color: '#ff5555', fontWeight: 'bold' }}>{selectedItem.minDamage} - {selectedItem.maxDamage} Dmg</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Weapon Attack Type:</span>
-                        <span>{selectedItem.attacks}</span>
-                      </div>
-                    </>
-                  )}
-                  {selectedItem.toughness > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Toughness (Armor):</span>
-                      <span style={{ color: '#88aaff', fontWeight: 'bold' }}>+{selectedItem.toughness}</span>
-                    </div>
-                  )}
                   {selectedItem.actions && selectedItem.actions !== 'None' && (
                     <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                       <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
@@ -481,7 +623,7 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {getSortedItems(['gear', 'trinket']).map((item, index) => (
+                    {getSortedItems('gear').map((item, index) => (
                       <tr 
                         key={item.id} 
                         onClick={() => setSelectedItem(item)}
@@ -512,7 +654,7 @@ function App() {
                         <td style={{ padding: '8px', color: 'var(--accent-cyan)' }}>{item.buyValue} Ren</td>
                       </tr>
                     ))}
-                    {getSortedItems(['gear', 'trinket']).length === 0 && (
+                    {getSortedItems('gear').length === 0 && (
                       <tr>
                         <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
                       </tr>
@@ -567,18 +709,6 @@ function App() {
                     <span style={{ color: 'var(--text-muted)' }}>Decay Rule:</span>
                     <span>{selectedItem.decayInfo}</span>
                   </div>
-                  {selectedItem.maxDamage > 0 && (
-                    <>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Damage Range:</span>
-                        <span style={{ color: '#ff5555', fontWeight: 'bold' }}>{selectedItem.minDamage} - {selectedItem.maxDamage} Dmg</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Weapon Attack Type:</span>
-                        <span>{selectedItem.attacks}</span>
-                      </div>
-                    </>
-                  )}
                   {selectedItem.toughness > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                       <span style={{ color: 'var(--text-muted)' }}>Toughness (Armor):</span>
@@ -639,7 +769,7 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {getSortedItems(foodTypes).map((item, index) => (
+                    {getSortedItems('food').map((item, index) => (
                       <tr 
                         key={item.id} 
                         onClick={() => setSelectedItem(item)}
@@ -670,7 +800,7 @@ function App() {
                         <td style={{ padding: '8px', color: 'var(--accent-cyan)' }}>{item.buyValue} Ren</td>
                       </tr>
                     ))}
-                    {getSortedItems(foodTypes).length === 0 && (
+                    {getSortedItems('food').length === 0 && (
                       <tr>
                         <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
                       </tr>
@@ -774,7 +904,7 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {getSortedItems(resourceTypes).map((item, index) => (
+                    {getSortedItems('resources').map((item, index) => (
                       <tr 
                         key={item.id} 
                         onClick={() => setSelectedItem(item)}
@@ -804,7 +934,7 @@ function App() {
                         <td style={{ padding: '8px', color: 'var(--accent-cyan)' }}>{item.buyValue} Ren</td>
                       </tr>
                     ))}
-                    {getSortedItems(resourceTypes).length === 0 && (
+                    {getSortedItems('resources').length === 0 && (
                       <tr>
                         <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
                       </tr>
