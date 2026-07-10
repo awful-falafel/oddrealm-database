@@ -124,6 +124,11 @@ function App() {
     return types.join(', ');
   };
 
+  const formatUnlockText = (text) => {
+    if (!text || text === 'None') return '-';
+    return text;
+  };
+
   // Lists of options dynamically derived from items in glossary
   const getMaterialsList = (viewName) => {
     const items = getFilteredItemsBase(viewName);
@@ -710,7 +715,7 @@ function App() {
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 2.4.0</div>
+          <div>Explorer Version: 2.5.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -1081,7 +1086,7 @@ function App() {
                                 ))}
                               </div>
                             ) : (
-                              <span>{item.unlockResearch || 'None (Start)'}</span>
+                              <span>{formatUnlockText(item.unlockResearch)}</span>
                             )}
                           </td>
                           <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
@@ -1206,7 +1211,7 @@ function App() {
                                 ))}
                               </div>
                             ) : (
-                              <span>{item.unlockResearch || 'None (Start)'}</span>
+                              <span>{formatUnlockText(item.unlockResearch)}</span>
                             )}
                           </td>
                           <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
@@ -1333,7 +1338,7 @@ function App() {
                                 ))}
                               </div>
                             ) : (
-                              <span>{item.unlockResearch || 'None (Start)'}</span>
+                              <span>{formatUnlockText(item.unlockResearch)}</span>
                             )}
                           </td>
                           <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
@@ -1453,7 +1458,7 @@ function App() {
                                 ))}
                               </div>
                             ) : (
-                              <span>{item.unlockResearch || 'None (Start)'}</span>
+                              <span>{formatUnlockText(item.unlockResearch)}</span>
                             )}
                           </td>
                           <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
@@ -1563,7 +1568,7 @@ function App() {
                                 ))}
                               </div>
                             ) : (
-                              <span>{item.unlockResearch || 'None (Start)'}</span>
+                              <span>{formatUnlockText(item.unlockResearch)}</span>
                             )}
                           </td>
                           <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
@@ -1687,7 +1692,7 @@ function App() {
                                 ))}
                               </div>
                             ) : (
-                              <span>{item.unlockResearch || 'None (Start)'}</span>
+                              <span>{formatUnlockText(item.unlockResearch)}</span>
                             )}
                           </td>
                           <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
@@ -1785,7 +1790,7 @@ function App() {
                               ))}
                             </div>
                           ) : (
-                            <span>{block.unlockResearch || 'None (Start)'}</span>
+                            <span>{formatUnlockText(block.unlockResearch)}</span>
                           )}
                         </td>
                         <td style={{ padding: '8px', fontWeight: 600, color: 'var(--accent-cyan)' }}>+{block.roomQuality}</td>
@@ -1844,7 +1849,7 @@ function App() {
                           ))}
                         </div>
                       ) : (
-                        <span style={{ color: 'var(--tbl-highlight)', fontWeight: 'bold' }}>{selectedBlock.unlockResearch || 'None (Start)'}</span>
+                        <span style={{ color: 'var(--tbl-highlight)', fontWeight: 'bold' }}>{formatUnlockText(selectedBlock.unlockResearch)}</span>
                       )}
                     </span>
                   </div>
