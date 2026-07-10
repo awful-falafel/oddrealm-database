@@ -26,7 +26,9 @@
   
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.7);
   --transition-fast: 0.15s ease-in-out;
-  --transition-normal: 0.25s ease-in-out;
+  --tbl-damage: #ff5555;
+  --tbl-toughness: #88aaff;
+  --tbl-highlight: #ffc233;
 }
 
 body.light-theme {
@@ -40,10 +42,23 @@ body.light-theme {
   --text-secondary: #5a4b3c;
   --text-muted: #8c7c6c;
   
-  --accent-cyan: #b07c03;
-  --accent-cyan-glow: rgba(176, 124, 3, 0.15);
-  --accent-purple: #9c3f0b;
-  --accent-purple-glow: rgba(156, 63, 11, 0.15);
+  --accent-cyan: #966000;
+  --accent-cyan-glow: rgba(150, 96, 0, 0.15);
+  --accent-purple: #872e00;
+  --accent-purple-glow: rgba(135, 46, 0, 0.15);
+
+  --tbl-damage: #aa0000;
+  --tbl-toughness: #0055cc;
+  --tbl-highlight: #785100;
+}
+
+body.light-theme * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+body.light-theme .app-container {
+  background-image: none !important;
 }
 
 * {

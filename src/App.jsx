@@ -88,6 +88,16 @@ function App() {
   };
 
   const getRarityColor = (rarity) => {
+    if (theme === 'light') {
+      const colors = {
+        common: '#555555',
+        uncommon: '#118000',
+        rare: '#0055d4',
+        epic: '#8018bf',
+        legendary: '#b55b00'
+      };
+      return colors[rarity] || '#555555';
+    }
     const colors = {
       common: '#9d9d9d',
       uncommon: '#1eff00',
@@ -397,25 +407,25 @@ function App() {
     return (
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
         {badges.map((badge, idx) => {
-          let badgeColor = 'rgba(255, 255, 255, 0.05)';
-          let textColor = '#88ffaa';
+          let badgeColor = theme === 'light' ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
+          let textColor = theme === 'light' ? '#2d2319' : '#88ffaa';
           const lower = badge.toLowerCase();
           
           if (lower.includes('resist') || lower.includes('warmth') || lower.includes('cold')) {
-            badgeColor = 'rgba(0, 150, 255, 0.15)';
-            textColor = '#33aaff';
+            badgeColor = theme === 'light' ? 'rgba(0, 100, 220, 0.1)' : 'rgba(0, 150, 255, 0.15)';
+            textColor = theme === 'light' ? '#0055cc' : '#33aaff';
           } else if (lower.includes('speed') || lower.includes('haste')) {
-            badgeColor = 'rgba(255, 200, 0, 0.15)';
-            textColor = '#ffcc00';
+            badgeColor = theme === 'light' ? 'rgba(180, 120, 0, 0.1)' : 'rgba(255, 200, 0, 0.15)';
+            textColor = theme === 'light' ? '#805500' : '#ffcc00';
           } else if (lower.includes('damage') || lower.includes('power') || lower.includes('attack') || lower.includes('strength')) {
-            badgeColor = 'rgba(255, 80, 80, 0.15)';
-            textColor = '#ff6666';
+            badgeColor = theme === 'light' ? 'rgba(200, 0, 0, 0.08)' : 'rgba(255, 80, 80, 0.15)';
+            textColor = theme === 'light' ? '#aa0000' : '#ff6666';
           } else if (lower.includes('health') || lower.includes('energy') || lower.includes('vitality') || lower.includes('mana')) {
-            badgeColor = 'rgba(80, 255, 80, 0.15)';
-            textColor = '#66ff66';
+            badgeColor = theme === 'light' ? 'rgba(0, 150, 0, 0.08)' : 'rgba(80, 255, 80, 0.15)';
+            textColor = theme === 'light' ? '#007700' : '#66ff66';
           } else if (lower.includes('armor') || lower.includes('defense') || lower.includes('toughness') || lower.includes('shield')) {
-            badgeColor = 'rgba(200, 200, 200, 0.15)';
-            textColor = '#cccccc';
+            badgeColor = theme === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(200, 200, 200, 0.15)';
+            textColor = theme === 'light' ? '#333333' : '#cccccc';
           }
           
           return (
@@ -480,7 +490,7 @@ function App() {
                         style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                         onError={(e) => { e.target.style.display = 'none'; }}
                       />
-                      <span style={{ color: '#ffc233', fontWeight: 'bold', fontSize: '0.85rem' }}>{r.name}</span>
+                      <span style={{ color: 'var(--tbl-highlight)', fontWeight: 'bold', fontSize: '0.85rem' }}>{r.name}</span>
                     </div>
                   ))}
                 </div>
@@ -520,9 +530,9 @@ function App() {
     <div className="app-container">
       <style>{`
         @keyframes row-flash {
-          0% { background-color: rgba(0, 240, 255, 0.45); box-shadow: inset 0 0 12px rgba(0, 240, 255, 0.6); }
-          40% { background-color: rgba(0, 240, 255, 0.2); box-shadow: inset 0 0 6px rgba(0, 240, 255, 0.3); }
-          100% { background-color: transparent; box-shadow: none; }
+          0% { background-color: rgba(0, 240, 255, 0.45); }
+          40% { background-color: rgba(0, 240, 255, 0.2); }
+          100% { background-color: transparent; }
         }
         .flash-highlight {
           animation: row-flash 2.5s ease-out;
@@ -575,7 +585,6 @@ function App() {
         .switch-label:hover {
           background: rgba(255, 128, 0, 0.08);
           border-color: rgba(255, 128, 0, 0.6);
-          box-shadow: 0 0 10px rgba(255, 128, 0, 0.15);
         }
         .switch-track {
           position: relative;
@@ -681,7 +690,7 @@ function App() {
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 2.2.0</div>
+          <div>Explorer Version: 2.3.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -714,31 +723,6 @@ function App() {
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* Theme Toggle Switch */}
-            <label className="switch-label" style={{ 
-              color: 'var(--text-primary)', 
-              borderColor: 'var(--border-glass)',
-              background: 'var(--bg-secondary)' 
-            }}>
-              <input 
-                type="checkbox" 
-                checked={theme === 'light'} 
-                onChange={(e) => setTheme(e.target.checked ? 'light' : 'dark')}
-                style={{ display: 'none' }}
-              />
-              <div className="switch-track" style={{ 
-                backgroundColor: theme === 'light' ? 'rgba(176, 124, 3, 0.25)' : 'rgba(0, 0, 0, 0.5)',
-                borderColor: theme === 'light' ? 'var(--accent-cyan)' : 'var(--border-glass)'
-              }}>
-                <div className="switch-thumb" style={{ 
-                  left: theme === 'light' ? '18px' : '2px',
-                  backgroundColor: 'var(--accent-cyan)',
-                  boxShadow: `0 0 6px var(--accent-cyan)`
-                }} />
-              </div>
-              <span style={{ fontWeight: 600 }}>{theme === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
-            </label>
-
             {/* Spoiler Shield Checkbox */}
             <label className="switch-label">
               <input 
@@ -753,8 +737,7 @@ function App() {
               }}>
                 <div className="switch-thumb" style={{ 
                   left: hideSpoilers ? '18px' : '2px',
-                  backgroundColor: hideSpoilers ? '#ff8000' : '#9d9d9d',
-                  boxShadow: hideSpoilers ? '0 0 6px #ff8000' : 'none'
+                  backgroundColor: hideSpoilers ? '#ff8000' : '#9d9d9d'
                 }} />
               </div>
               <span style={{ fontWeight: 600 }}>🔒 Blur Legendary Spoilers</span>
@@ -790,7 +773,6 @@ function App() {
                   background: '#19130e', 
                   border: '1px solid var(--border-glass)', 
                   borderRadius: '8px', 
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
                   zIndex: 100
                 }}>
                   {searchResults.map(result => {
@@ -832,6 +814,30 @@ function App() {
                 </div>
               )}
             </div>
+
+            {/* Theme Toggle Switch (Moved to the far-right) */}
+            <label className="switch-label" style={{ 
+              color: 'var(--text-primary)', 
+              borderColor: 'var(--border-glass)',
+              background: 'var(--bg-secondary)' 
+            }}>
+              <input 
+                type="checkbox" 
+                checked={theme === 'light'} 
+                onChange={(e) => setTheme(e.target.checked ? 'light' : 'dark')}
+                style={{ display: 'none' }}
+              />
+              <div className="switch-track" style={{ 
+                backgroundColor: theme === 'light' ? 'rgba(150, 96, 0, 0.25)' : 'rgba(0, 0, 0, 0.5)',
+                borderColor: theme === 'light' ? 'var(--accent-cyan)' : 'var(--border-glass)'
+              }}>
+                <div className="switch-thumb" style={{ 
+                  left: theme === 'light' ? '18px' : '2px',
+                  backgroundColor: 'var(--accent-cyan)'
+                }} />
+              </div>
+              <span style={{ fontWeight: 600 }}>{theme === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
+            </label>
           </div>
         </div>
 
@@ -966,7 +972,7 @@ function App() {
               <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                   <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
+                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
                       <th style={{ padding: '10px 8px' }}>Icon</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
@@ -987,7 +993,7 @@ function App() {
                           id={`row-${item.id}`}
                           onClick={() => setSelectedItem(item)}
                           style={{ 
-                            borderBottom: '1px solid rgba(255,255,255,0.03)',
+                            borderBottom: '1px solid var(--border-glass)',
                             backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                             cursor: 'pointer'
                           }}
@@ -1008,17 +1014,17 @@ function App() {
                           <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                           </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-damage)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
                           </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.toughness > 0 ? `+${item.toughness}` : '-'}
                           </td>
-                          <td style={{ padding: '8px', color: '#ffc233', fontWeight: 600 }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 600 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {getAttackTypeLabel(item.attacks)}
                           </td>
                           <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                 {item.unlockResearchList.map((r, i) => (
@@ -1090,7 +1096,7 @@ function App() {
               <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                   <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
+                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
                       <th style={{ padding: '10px 8px' }}>Icon</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
@@ -1110,7 +1116,7 @@ function App() {
                           id={`row-${item.id}`}
                           onClick={() => setSelectedItem(item)}
                           style={{ 
-                            borderBottom: '1px solid rgba(255,255,255,0.03)',
+                            borderBottom: '1px solid var(--border-glass)',
                             backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                             cursor: 'pointer'
                           }}
@@ -1131,14 +1137,14 @@ function App() {
                           <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                           </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-damage)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
                           </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.toughness > 0 ? `+${item.toughness}` : '-'}
                           </td>
                           <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                 {item.unlockResearchList.map((r, i) => (
@@ -1212,7 +1218,7 @@ function App() {
               <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                   <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
+                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
                       <th style={{ padding: '10px 8px' }}>Icon</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
@@ -1233,7 +1239,7 @@ function App() {
                           id={`row-${item.id}`}
                           onClick={() => setSelectedItem(item)}
                           style={{ 
-                            borderBottom: '1px solid rgba(255,255,255,0.03)',
+                            borderBottom: '1px solid var(--border-glass)',
                             backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                             cursor: 'pointer'
                           }}
@@ -1254,13 +1260,13 @@ function App() {
                           <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                           </td>
-                          <td style={{ padding: '8px', color: '#ffc233' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.slots}</td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.slots}</td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-damage)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
                           </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.toughness > 0 ? `+${item.toughness}` : '-'}</td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.toughness > 0 ? `+${item.toughness}` : '-'}</td>
                           <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                 {item.unlockResearchList.map((r, i) => (
@@ -1327,7 +1333,7 @@ function App() {
               <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                   <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
+                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
                       <th style={{ padding: '10px 8px' }}>Icon</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('type')}>Type</th>
@@ -1348,7 +1354,7 @@ function App() {
                           id={`row-${item.id}`}
                           onClick={() => setSelectedItem(item)}
                           style={{ 
-                            borderBottom: '1px solid rgba(255,255,255,0.03)',
+                            borderBottom: '1px solid var(--border-glass)',
                             backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                             cursor: 'pointer'
                           }}
@@ -1371,11 +1377,11 @@ function App() {
                             {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                           </td>
                           <td style={{ padding: '8px', color: 'var(--text-muted)', fontSize: '0.8rem' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.decayInfo !== 'None' ? item.decayInfo : '-'}</td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.toughness > 0 ? `+${item.toughness}` : '-'}
                           </td>
                           <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                 {item.unlockResearchList.map((r, i) => (
@@ -1436,7 +1442,7 @@ function App() {
               <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                   <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
+                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
                       <th style={{ padding: '10px 8px' }}>Icon</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
@@ -1455,7 +1461,7 @@ function App() {
                           id={`row-${item.id}`}
                           onClick={() => setSelectedItem(item)}
                           style={{ 
-                            borderBottom: '1px solid rgba(255,255,255,0.03)',
+                            borderBottom: '1px solid var(--border-glass)',
                             backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                             cursor: 'pointer'
                           }}
@@ -1476,11 +1482,11 @@ function App() {
                           <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                           </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.toughness > 0 ? `+${item.toughness}` : '-'}
                           </td>
                           <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                 {item.unlockResearchList.map((r, i) => (
@@ -1547,7 +1553,7 @@ function App() {
               <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                   <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
+                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
                       <th style={{ padding: '10px 8px' }}>Icon</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('type')}>Classification</th>
@@ -1569,7 +1575,7 @@ function App() {
                           id={`row-${item.id}`}
                           onClick={() => setSelectedItem(item)}
                           style={{ 
-                            borderBottom: '1px solid rgba(255,255,255,0.03)',
+                            borderBottom: '1px solid var(--border-glass)',
                             backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                             cursor: 'pointer'
                           }}
@@ -1592,14 +1598,14 @@ function App() {
                             {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                           </td>
                           <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.stackSize} items</td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-damage)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
                           </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.toughness > 0 ? `+${item.toughness}` : '-'}
                           </td>
                           <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                 {item.unlockResearchList.map((r, i) => (
@@ -1658,7 +1664,7 @@ function App() {
               <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                   <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
+                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
                       <th style={{ padding: '10px 8px' }}>Icon</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('name')}>Name {blocksSort.field === 'name' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('unlockResearch')}>Unlocked By {blocksSort.field === 'unlockResearch' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
@@ -1674,7 +1680,7 @@ function App() {
                         id={`row-${block.id}`}
                         onClick={() => setSelectedBlock(block)}
                         style={{ 
-                          borderBottom: '1px solid rgba(255,255,255,0.03)',
+                          borderBottom: '1px solid var(--border-glass)',
                           backgroundColor: selectedBlock?.id === block.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                           cursor: 'pointer'
                         }}
@@ -1692,7 +1698,7 @@ function App() {
                           <div style={{ fontWeight: 600 }}>{block.name}</div>
                           <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{block.id}</div>
                         </td>
-                        <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }}>
+                        <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }}>
                           {block.unlockResearchList && block.unlockResearchList.length > 0 ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                               {block.unlockResearchList.map((r, i) => (
@@ -1762,12 +1768,12 @@ function App() {
                                 style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                                 onError={(e) => { e.target.style.display = 'none'; }}
                               />
-                              <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
+                              <span style={{ color: 'var(--tbl-highlight)', fontWeight: 'bold' }}>{r.name}</span>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedBlock.unlockResearch || 'None (Start)'}</span>
+                        <span style={{ color: 'var(--tbl-highlight)', fontWeight: 'bold' }}>{selectedBlock.unlockResearch || 'None (Start)'}</span>
                       )}
                     </span>
                   </div>
