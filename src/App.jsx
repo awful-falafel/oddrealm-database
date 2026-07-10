@@ -7,9 +7,12 @@ function App() {
   const [currentView, setCurrentView] = useState('dashboard'); // dashboard, weapons, tools, gear, food, resources, blocks, stations
   const [glossary, setGlossary] = useState(prepackagedGlossary);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedBlock, setSelectedBlock] = useState(null);
   
+  const [highlightId, setHighlightId] = useState(null);
+
   // Filters
   const [rarityFilter, setRarityFilter] = useState('all');
   const [stationFilter, setStationFilter] = useState('all');
@@ -60,7 +63,147 @@ function App() {
     return weaponKeywords.some(kw => name.includes(kw) || id.includes(kw));
   };
 
-  // Items filtering & sorting logic
+  // Universal Search Handler (supports regex)
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    let regex = null;
+    let isRegex = true;
+    try {
+      // Create case-insensitive regex pattern
+      regex = new RegExp(searchQuery, 'i');
+    } catch (e) {
+      isRegex = false; // Fall back to simple string includes
+    }
+
+    const testMatch = (text) => {
+      if (!text) return false;
+      if (isRegex && regex) {
+        return regex.test(text);
+      }
+      return text.toLowerCase().includes(searchQuery.toLowerCase());
+    };
+
+    const results = [];
+
+    // 1. Search Items
+    if (glossary.items) {
+      glossary.items.forEach(item => {
+        const itemText = `${item.name} ${item.id} ${item.type} ${item.actions} ${item.slots} ${item.attacks} ${item.rarity} ${item.unlockResearch}`;
+        if (testMatch(itemText)) {
+          let view = 'resources';
+          let icon = '📦';
+          let label = 'Material';
+          
+          if (isWeapon(item)) {
+            view = 'weapons';
+            icon = '🗡️';
+            label = 'Weapon';
+          } else if (item.type === 'tool') {
+            view = 'tools';
+            icon = '⛏️';
+            label = 'Tool';
+          } else if (item.type === 'gear' || item.type === 'trinket' || isShield(item)) {
+            view = 'gear';
+            icon = '🛡️';
+            label = 'Gear';
+          } else if (foodTypes.includes(item.type)) {
+            view = 'food';
+            icon = '🍏';
+            label = 'Food';
+          }
+
+          results.push({
+            uniqueKey: `item-${item.id}`,
+            id: item.id,
+            name: item.name,
+            type: 'item',
+            view,
+            icon,
+            details: `${label} • ${item.rarity} • Unlocked by: ${item.unlockResearch || 'None'}`,
+            data: item
+          });
+        }
+      });
+    }
+
+    // 2. Search Blocks
+    if (glossary.blocks) {
+      glossary.blocks.forEach(block => {
+        const blockText = `${block.name} ${block.id} ${block.unlockResearch} ${block.isStation ? 'station' : 'block'}`;
+        if (testMatch(blockText)) {
+          results.push({
+            uniqueKey: `block-${block.id}`,
+            id: block.id,
+            name: block.name,
+            type: 'block',
+            view: 'blocks',
+            icon: block.isStation ? '🛠️' : '🧱',
+            details: `Block • ${block.isStation ? 'Crafting Station' : 'Terrain / Wall'} • Unlocked by: ${block.unlockResearch || 'None'}`,
+            data: block
+          });
+        }
+      });
+    }
+
+    // 3. Search Stations
+    if (glossary.craftingStations) {
+      glossary.craftingStations.forEach(station => {
+        const stationText = `${station.name} ${station.id}`;
+        if (testMatch(stationText)) {
+          results.push({
+            uniqueKey: `station-${station.id}`,
+            id: station.id,
+            name: station.name,
+            type: 'station',
+            view: 'stations',
+            icon: '⚙️',
+            details: `Workstation • ${station.id}`,
+            data: station
+          });
+        }
+      });
+    }
+
+    setSearchResults(results.slice(0, 12));
+  }, [searchQuery, glossary]);
+
+  const handleSearchResultClick = (result) => {
+    // Clear search states
+    setSearchQuery('');
+    setSearchResults([]);
+
+    // Switch view
+    setCurrentView(result.view);
+
+    // Set inspection panel state
+    if (result.type === 'item') {
+      setSelectedItem(result.data);
+      setSelectedBlock(null);
+    } else if (result.type === 'block') {
+      setSelectedBlock(result.data);
+      setSelectedItem(null);
+    }
+
+    // Highlight flash & scroll
+    setHighlightId(result.id);
+    setTimeout(() => {
+      const element = document.getElementById(`row-${result.id}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 150);
+
+    // Clear highlight after animation completes
+    setTimeout(() => {
+      setHighlightId(null);
+    }, 2600);
+  };
+
+  // Sorting & Filtering helpers
   const handleSortItems = (field) => {
     setItemsSort(prev => ({
       field,
@@ -72,29 +215,14 @@ function App() {
     if (!glossary.items) return [];
     
     return glossary.items.filter(item => {
-      const matchesSearch = 
-        item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.id?.toLowerCase().includes(searchQuery.toLowerCase());
-      
       const matchesRarity = rarityFilter === 'all' || item.rarity === rarityFilter;
-      if (!matchesSearch || !matchesRarity) return false;
+      if (!matchesRarity) return false;
 
-      // Classify views
-      if (viewName === 'weapons') {
-        return isWeapon(item);
-      }
-      if (viewName === 'tools') {
-        return item.type === 'tool' && !isWeapon(item) && !isShield(item);
-      }
-      if (viewName === 'gear') {
-        return item.type === 'gear' || item.type === 'trinket' || isShield(item);
-      }
-      if (viewName === 'food') {
-        return foodTypes.includes(item.type);
-      }
-      if (viewName === 'resources') {
-        return resourceTypes.includes(item.type);
-      }
+      if (viewName === 'weapons') return isWeapon(item);
+      if (viewName === 'tools') return item.type === 'tool' && !isWeapon(item) && !isShield(item);
+      if (viewName === 'gear') return item.type === 'gear' || item.type === 'trinket' || isShield(item);
+      if (viewName === 'food') return foodTypes.includes(item.type);
+      if (viewName === 'resources') return resourceTypes.includes(item.type);
 
       return false;
     });
@@ -119,7 +247,6 @@ function App() {
     });
   };
 
-  // Blocks filtering & sorting logic
   const handleSortBlocks = (field) => {
     setBlocksSort(prev => ({
       field,
@@ -131,16 +258,9 @@ function App() {
     if (!glossary.blocks) return [];
 
     return glossary.blocks.filter(block => {
-      const matchesSearch = 
-        block.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        block.id?.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesStation = 
-        stationFilter === 'all' || 
-        (stationFilter === 'station' && block.isStation) || 
-        (stationFilter === 'block' && !block.isStation);
-
-      return matchesSearch && matchesStation;
+      return stationFilter === 'all' || 
+             (stationFilter === 'station' && block.isStation) || 
+             (stationFilter === 'block' && !block.isStation);
     });
   };
 
@@ -163,7 +283,7 @@ function App() {
     });
   };
 
-  // Helper to format effects/attributes column safely
+  // Safe attribute formatting
   const formatEffects = (effectsStr) => {
     if (!effectsStr || effectsStr === 'None') return '-';
     return effectsStr.split(', ')
@@ -171,12 +291,25 @@ function App() {
       .join(', ') || '-';
   };
 
-  // Type definitions
   const foodTypes = ['meal', 'fruit', 'vegetable', 'meat', 'fish', 'fungus', 'alcohol', 'beverage', 'egg', 'milk', 'potion'];
   const resourceTypes = ['refined_material', 'ingot', 'ore', 'gem', 'stone', 'wood', 'seed', 'plant_material', 'animal_byproduct', 'remains', 'container', 'garbage', 'soil', 'trinket', 'OnJobDisposedTagObjectID'];
 
   return (
     <div className="app-container">
+      <style>{`
+        @keyframes row-flash {
+          0% { background-color: rgba(0, 240, 255, 0.45); box-shadow: inset 0 0 12px rgba(0, 240, 255, 0.6); }
+          40% { background-color: rgba(0, 240, 255, 0.2); box-shadow: inset 0 0 6px rgba(0, 240, 255, 0.3); }
+          100% { background-color: transparent; box-shadow: none; }
+        }
+        .flash-highlight {
+          animation: row-flash 2.5s ease-out;
+        }
+        .search-result-item:hover {
+          background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+      `}</style>
+
       {/* SIDEBAR */}
       <div className="sidebar">
         <div className="logo-container">
@@ -239,7 +372,7 @@ function App() {
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 1.5.0</div>
+          <div>Explorer Version: 1.6.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -248,6 +381,86 @@ function App() {
       {/* MAIN CONTENT AREA */}
       <div className="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
         
+        {/* GLOBAL HEADER WITH UNIVERSAL REGEX SEARCH */}
+        <div className="top-header" style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          padding: '16px 24px', 
+          borderBottom: '1px solid var(--border-glass)',
+          background: 'rgba(26, 20, 15, 0.4)',
+          backdropFilter: 'blur(10px)',
+          zIndex: 10
+        }}>
+          <div style={{ color: 'var(--accent-cyan)', fontSize: '0.9rem', fontWeight: 600, fontFamily: 'var(--font-header)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            {currentView === 'dashboard' && '🏰 Dashboard'}
+            {currentView === 'weapons' && '🗡️ Weapons Database'}
+            {currentView === 'tools' && '⛏️ Tools Database'}
+            {currentView === 'gear' && '🛡️ Armor & Gear'}
+            {currentView === 'food' && '🍏 Food & Potions'}
+            {currentView === 'resources' && '📦 Materials & Seeds'}
+            {currentView === 'blocks' && '🧱 Blocks & Props'}
+            {currentView === 'stations' && '🛠️ Crafting Stations'}
+          </div>
+          
+          <div style={{ position: 'relative', width: '360px' }}>
+            <input 
+              type="text" 
+              placeholder="Search anything... (e.g. \+[0-9]\sFishing)" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ 
+                width: '100%', 
+                padding: '8px 16px', 
+                borderRadius: '20px', 
+                background: 'var(--bg-secondary)', 
+                color: 'var(--text-primary)', 
+                border: '1px solid var(--border-glass)',
+                outline: 'none',
+                fontSize: '0.85rem'
+              }}
+            />
+            
+            {searchResults.length > 0 && (
+              <div style={{ 
+                position: 'absolute', 
+                top: '40px', 
+                right: 0, 
+                width: '420px', 
+                maxHeight: '400px', 
+                overflowY: 'auto', 
+                background: '#19130e', 
+                border: '1px solid var(--border-glass)', 
+                borderRadius: '8px', 
+                boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+                zIndex: 100
+              }}>
+                {searchResults.map(result => (
+                  <div 
+                    key={result.uniqueKey} 
+                    onClick={() => handleSearchResultClick(result)}
+                    style={{ 
+                      padding: '10px 14px', 
+                      cursor: 'pointer', 
+                      borderBottom: '1px solid rgba(255,255,255,0.03)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}
+                    className="search-result-item"
+                  >
+                    <span style={{ fontSize: '1.25rem' }}>{result.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--accent-cyan)' }}>{result.name}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>{result.details}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* VIEW: DASHBOARD */}
         {currentView === 'dashboard' && (
           <div style={{ padding: '40px', overflowY: 'auto', flex: 1 }}>
@@ -336,9 +549,9 @@ function App() {
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🗡️ Weapons</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Combat-specific items designed to inflict damage, showing ranges and attack types.</p>
+                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Weapons database. Displays physical damage ranges and attack parameters.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div>
                   <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
                     <option value="all">All Rarities</option>
                     <option value="common">Common</option>
@@ -347,13 +560,6 @@ function App() {
                     <option value="epic">Epic</option>
                     <option value="legendary">Legendary</option>
                   </select>
-                  <input 
-                    type="text" 
-                    placeholder="Search weapons..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ width: '220px', padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}
-                  />
                 </div>
               </div>
 
@@ -375,12 +581,14 @@ function App() {
                     {getSortedItems('weapons').map((item, index) => (
                       <tr 
                         key={item.id} 
+                        id={`row-${item.id}`}
                         onClick={() => setSelectedItem(item)}
                         style={{ 
                           borderBottom: '1px solid rgba(255,255,255,0.03)',
                           backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                           cursor: 'pointer'
                         }}
+                        className={highlightId === item.id ? 'flash-highlight' : ''}
                       >
                         <td style={{ padding: '8px' }}>
                           <img 
@@ -406,7 +614,7 @@ function App() {
                     ))}
                     {getSortedItems('weapons').length === 0 && (
                       <tr>
-                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
+                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -463,10 +671,6 @@ function App() {
                     <span style={{ color: 'var(--text-muted)' }}>Equip Slots:</span>
                     <span>{selectedItem.slots}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Stack Size:</span>
-                    <span>{selectedItem.stackSize} items</span>
-                  </div>
                   {selectedItem.actions && selectedItem.actions !== 'None' && (
                     <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                       <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
@@ -490,20 +694,13 @@ function App() {
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>⛏️ Tools</h1>
                   <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Spoons, pickaxes, axes, needles, chisels, and harvesting implements.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div>
                   <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
                     <option value="all">All Rarities</option>
                     <option value="common">Common</option>
                     <option value="uncommon">Uncommon</option>
                     <option value="rare">Rare</option>
                   </select>
-                  <input 
-                    type="text" 
-                    placeholder="Search tools..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ width: '220px', padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}
-                  />
                 </div>
               </div>
 
@@ -523,12 +720,14 @@ function App() {
                     {getSortedItems('tools').map((item, index) => (
                       <tr 
                         key={item.id} 
+                        id={`row-${item.id}`}
                         onClick={() => setSelectedItem(item)}
                         style={{ 
                           borderBottom: '1px solid rgba(255,255,255,0.03)',
                           backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                           cursor: 'pointer'
                         }}
+                        className={highlightId === item.id ? 'flash-highlight' : ''}
                       >
                         <td style={{ padding: '8px' }}>
                           <img 
@@ -552,7 +751,7 @@ function App() {
                     ))}
                     {getSortedItems('tools').length === 0 && (
                       <tr>
-                        <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
+                        <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -628,7 +827,7 @@ function App() {
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🛡️ Armor & Gear</h1>
                   <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Helmets, chestplates, greaves, boots, gauntlets, shields, and rings.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div>
                   <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
                     <option value="all">All Rarities</option>
                     <option value="common">Common</option>
@@ -637,13 +836,6 @@ function App() {
                     <option value="epic">Epic</option>
                     <option value="legendary">Legendary</option>
                   </select>
-                  <input 
-                    type="text" 
-                    placeholder="Search gear..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ width: '220px', padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}
-                  />
                 </div>
               </div>
 
@@ -665,12 +857,14 @@ function App() {
                     {getSortedItems('gear').map((item, index) => (
                       <tr 
                         key={item.id} 
+                        id={`row-${item.id}`}
                         onClick={() => setSelectedItem(item)}
                         style={{ 
                           borderBottom: '1px solid rgba(255,255,255,0.03)',
                           backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                           cursor: 'pointer'
                         }}
+                        className={highlightId === item.id ? 'flash-highlight' : ''}
                       >
                         <td style={{ padding: '8px' }}>
                           <img 
@@ -696,7 +890,7 @@ function App() {
                     ))}
                     {getSortedItems('gear').length === 0 && (
                       <tr>
-                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
+                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -778,20 +972,13 @@ function App() {
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🍏 Food & Potions</h1>
                   <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Prepared meals, drinks, alcohol, raw ingredients, and magical potions.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div>
                   <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
                     <option value="all">All Rarities</option>
                     <option value="common">Common</option>
                     <option value="uncommon">Uncommon</option>
                     <option value="rare">Rare</option>
                   </select>
-                  <input 
-                    type="text" 
-                    placeholder="Search food..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ width: '220px', padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}
-                  />
                 </div>
               </div>
 
@@ -813,12 +1000,14 @@ function App() {
                     {getSortedItems('food').map((item, index) => (
                       <tr 
                         key={item.id} 
+                        id={`row-${item.id}`}
                         onClick={() => setSelectedItem(item)}
                         style={{ 
                           borderBottom: '1px solid rgba(255,255,255,0.03)',
                           backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                           cursor: 'pointer'
                         }}
+                        className={highlightId === item.id ? 'flash-highlight' : ''}
                       >
                         <td style={{ padding: '8px' }}>
                           <img 
@@ -844,7 +1033,7 @@ function App() {
                     ))}
                     {getSortedItems('food').length === 0 && (
                       <tr>
-                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
+                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -920,20 +1109,13 @@ function App() {
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>📦 Materials & Seeds</h1>
                   <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Wood, ingots, raw ores, agricultural seeds, refined building materials, and drops.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div>
                   <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
                     <option value="all">All Rarities</option>
                     <option value="common">Common</option>
                     <option value="uncommon">Uncommon</option>
                     <option value="rare">Rare</option>
                   </select>
-                  <input 
-                    type="text" 
-                    placeholder="Search materials..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ width: '220px', padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}
-                  />
                 </div>
               </div>
 
@@ -954,12 +1136,14 @@ function App() {
                     {getSortedItems('resources').map((item, index) => (
                       <tr 
                         key={item.id} 
+                        id={`row-${item.id}`}
                         onClick={() => setSelectedItem(item)}
                         style={{ 
                           borderBottom: '1px solid rgba(255,255,255,0.03)',
                           backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                           cursor: 'pointer'
                         }}
+                        className={highlightId === item.id ? 'flash-highlight' : ''}
                       >
                         <td style={{ padding: '8px' }}>
                           <img 
@@ -984,7 +1168,7 @@ function App() {
                     ))}
                     {getSortedItems('resources').length === 0 && (
                       <tr>
-                        <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
+                        <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -1060,19 +1244,12 @@ function App() {
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🧱 Blocks & Props database</h1>
                   <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Reference base game room quality, pathing movement costs, and research locks.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div>
                   <select value={stationFilter} onChange={(e) => setStationFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
                     <option value="all">All Categories</option>
                     <option value="station">Crafting / Furniture</option>
                     <option value="block">Map blocks / Walls</option>
                   </select>
-                  <input 
-                    type="text" 
-                    placeholder="Search name or ID..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ width: '220px', padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}
-                  />
                 </div>
               </div>
 
@@ -1092,12 +1269,14 @@ function App() {
                     {getSortedBlocks().map((block, index) => (
                       <tr 
                         key={block.id} 
+                        id={`row-${block.id}`}
                         onClick={() => setSelectedBlock(block)}
                         style={{ 
                           borderBottom: '1px solid rgba(255,255,255,0.03)',
                           backgroundColor: selectedBlock?.id === block.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
                           cursor: 'pointer'
                         }}
+                        className={highlightId === block.id ? 'flash-highlight' : ''}
                       >
                         <td style={{ padding: '8px' }}>
                           <img 
@@ -1119,7 +1298,7 @@ function App() {
                     ))}
                     {getSortedBlocks().length === 0 && (
                       <tr>
-                        <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No blocks match your search filters.</td>
+                        <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No blocks match your filters.</td>
                       </tr>
                     )}
                   </tbody>
