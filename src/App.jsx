@@ -288,11 +288,54 @@ function App() {
     });
   };
 
-  const formatEffects = (effectsStr) => {
+  const renderEffectBadges = (effectsStr) => {
     if (!effectsStr || effectsStr === 'None') return '-';
-    return effectsStr.split(', ')
-      .filter(act => !act.includes('SourceID') && !act.includes('Source id') && !act.includes('Source'))
-      .join(', ') || '-';
+    const badges = effectsStr.split(', ')
+      .filter(act => !act.includes('SourceID') && !act.includes('Source id') && !act.includes('Source') && act.trim() !== '');
+    
+    if (badges.length === 0) return '-';
+
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+        {badges.map((badge, idx) => {
+          let badgeColor = 'rgba(255, 255, 255, 0.05)';
+          let textColor = '#88ffaa';
+          const lower = badge.toLowerCase();
+          
+          if (lower.includes('resist') || lower.includes('warmth') || lower.includes('cold')) {
+            badgeColor = 'rgba(0, 150, 255, 0.15)';
+            textColor = '#33aaff';
+          } else if (lower.includes('speed') || lower.includes('haste')) {
+            badgeColor = 'rgba(255, 200, 0, 0.15)';
+            textColor = '#ffcc00';
+          } else if (lower.includes('damage') || lower.includes('power') || lower.includes('attack') || lower.includes('strength')) {
+            badgeColor = 'rgba(255, 80, 80, 0.15)';
+            textColor = '#ff6666';
+          } else if (lower.includes('health') || lower.includes('energy') || lower.includes('vitality') || lower.includes('mana')) {
+            badgeColor = 'rgba(80, 255, 80, 0.15)';
+            textColor = '#66ff66';
+          } else if (lower.includes('armor') || lower.includes('defense') || lower.includes('toughness') || lower.includes('shield')) {
+            badgeColor = 'rgba(200, 200, 200, 0.15)';
+            textColor = '#cccccc';
+          }
+          
+          return (
+            <span key={idx} style={{ 
+              padding: '2px 8px', 
+              borderRadius: '4px', 
+              background: badgeColor, 
+              color: textColor, 
+              fontSize: '0.75rem', 
+              fontWeight: 500,
+              border: `1px solid ${textColor}33`,
+              whiteSpace: 'nowrap'
+            }}>
+              {badge}
+            </span>
+          );
+        })}
+      </div>
+    );
   };
 
   const foodTypes = ['meal', 'fruit', 'vegetable', 'meat', 'fish', 'fungus', 'alcohol', 'beverage', 'egg', 'milk', 'potion'];
@@ -442,7 +485,7 @@ function App() {
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 1.8.0</div>
+          <div>Explorer Version: 1.9.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -671,6 +714,7 @@ function App() {
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('attacks')}>Attack Type</th>
                       <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
@@ -707,9 +751,14 @@ function App() {
                           <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                           </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }} className={isBlurred ? 'spoiler-blurred' : ''}>{`${item.minDamage}-${item.maxDamage}`}</td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
+                          </td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {item.toughness > 0 ? `+${item.toughness}` : '-'}
+                          </td>
                           <td style={{ padding: '8px', color: '#ffc233' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.attacks !== 'None' ? item.attacks : '-'}</td>
-                          <td style={{ padding: '8px', color: '#88ffaa', fontSize: '0.8rem' }} className={isBlurred ? 'spoiler-blurred' : ''}>{formatEffects(item.actions)}</td>
+                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
                           <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -735,7 +784,7 @@ function App() {
                     })}
                     {getSortedItems('weapons').length === 0 && (
                       <tr>
-                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
+                        <td colSpan="9" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -756,7 +805,7 @@ function App() {
                     <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
                     <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
-                      Uncheck the "Blur Legendary Items" shield in the top header to inspect parameters.
+                      Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
                     </p>
                   </div>
                 ) : (
@@ -774,7 +823,7 @@ function App() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                         <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
-                        <span>Weapon</span>
+                        <span>{isWeapon(selectedItem) ? 'Weapon' : selectedItem.type}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                         <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
@@ -812,10 +861,12 @@ function App() {
                         <span style={{ color: 'var(--text-muted)' }}>Damage Range:</span>
                         <span style={{ color: '#ff5555', fontWeight: 'bold' }}>{selectedItem.minDamage} - {selectedItem.maxDamage} Dmg</span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Weapon Attack Type:</span>
-                        <span style={{ color: '#ffc233' }}>{selectedItem.attacks}</span>
-                      </div>
+                      {selectedItem.attacks && selectedItem.attacks !== 'None' && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Weapon Attack Type:</span>
+                          <span style={{ color: '#ffc233' }}>{selectedItem.attacks}</span>
+                        </div>
+                      )}
                       <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                         <span style={{ color: 'var(--text-muted)' }}>Equip Slots:</span>
                         <span>{selectedItem.slots}</span>
@@ -824,12 +875,14 @@ function App() {
                         <span style={{ color: 'var(--text-muted)' }}>Stack Size:</span>
                         <span>{selectedItem.stackSize} items</span>
                       </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Toughness (Armor):</span>
+                        <span style={{ color: '#88aaff', fontWeight: 'bold' }}>+{selectedItem.toughness}</span>
+                      </div>
                       {selectedItem.actions && selectedItem.actions !== 'None' && (
                         <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                           <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
-                          <div style={{ color: '#88ffaa', fontSize: '0.85rem' }}>
-                            {selectedItem.actions.split(', ').filter(act => !act.includes('SourceID') && !act.includes('Source')).join(', ')}
-                          </div>
+                          <div>{renderEffectBadges(selectedItem.actions)}</div>
                         </div>
                       )}
                     </div>
@@ -866,6 +919,8 @@ function App() {
                       <th style={{ padding: '10px 8px' }}>Icon</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness</th>
                       <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value</th>
@@ -901,7 +956,13 @@ function App() {
                           <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                           </td>
-                          <td style={{ padding: '8px', color: '#88ffaa', fontSize: '0.8rem' }} className={isBlurred ? 'spoiler-blurred' : ''}>{formatEffects(item.actions)}</td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
+                          </td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {item.toughness > 0 ? `+${item.toughness}` : '-'}
+                          </td>
+                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
                           <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -927,7 +988,7 @@ function App() {
                     })}
                     {getSortedItems('tools').length === 0 && (
                       <tr>
-                        <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
+                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -948,7 +1009,7 @@ function App() {
                     <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
                     <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
-                      Uncheck the "Blur Legendary Items" shield in the top header to inspect parameters.
+                      Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
                     </p>
                   </div>
                 ) : (
@@ -1011,9 +1072,7 @@ function App() {
                       {selectedItem.actions && selectedItem.actions !== 'None' && (
                         <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                           <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
-                          <div style={{ color: '#88ffaa', fontSize: '0.85rem' }}>
-                            {selectedItem.actions.split(', ').filter(act => !act.includes('SourceID') && !act.includes('Source')).join(', ')}
-                          </div>
+                          <div>{renderEffectBadges(selectedItem.actions)}</div>
                         </div>
                       )}
                     </div>
@@ -1053,6 +1112,7 @@ function App() {
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('slots')}>Equip Slot</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness</th>
                       <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
@@ -1090,8 +1150,11 @@ function App() {
                             {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                           </td>
                           <td style={{ padding: '8px', color: '#ffc233' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.slots}</td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
+                          </td>
                           <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.toughness > 0 ? `+${item.toughness}` : '-'}</td>
-                          <td style={{ padding: '8px', color: '#88ffaa', fontSize: '0.8rem' }} className={isBlurred ? 'spoiler-blurred' : ''}>{formatEffects(item.actions)}</td>
+                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
                           <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -1117,7 +1180,7 @@ function App() {
                     })}
                     {getSortedItems('gear').length === 0 && (
                       <tr>
-                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
+                        <td colSpan="9" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -1138,7 +1201,7 @@ function App() {
                     <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
                     <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
-                      Uncheck the "Blur Legendary Items" shield in the top header to inspect parameters.
+                      Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
                     </p>
                   </div>
                 ) : (
@@ -1207,9 +1270,7 @@ function App() {
                       {selectedItem.actions && selectedItem.actions !== 'None' && (
                         <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                           <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
-                          <div style={{ color: '#88ffaa', fontSize: '0.85rem' }}>
-                            {selectedItem.actions.split(', ').filter(act => !act.includes('SourceID') && !act.includes('Source')).join(', ')}
-                          </div>
+                          <div>{renderEffectBadges(selectedItem.actions)}</div>
                         </div>
                       )}
                     </div>
@@ -1248,6 +1309,8 @@ function App() {
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('type')}>Type</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
                       <th style={{ padding: '10px 8px' }}>Decay Rule</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness</th>
                       <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value</th>
@@ -1285,7 +1348,13 @@ function App() {
                             {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                           </td>
                           <td style={{ padding: '8px', color: 'var(--text-muted)', fontSize: '0.8rem' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.decayInfo !== 'None' ? item.decayInfo : '-'}</td>
-                          <td style={{ padding: '8px', color: '#88ffaa', fontSize: '0.8rem' }} className={isBlurred ? 'spoiler-blurred' : ''}>{formatEffects(item.actions)}</td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
+                          </td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {item.toughness > 0 ? `+${item.toughness}` : '-'}
+                          </td>
+                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
                           <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -1311,7 +1380,7 @@ function App() {
                     })}
                     {getSortedItems('food').length === 0 && (
                       <tr>
-                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
+                        <td colSpan="10" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -1332,7 +1401,7 @@ function App() {
                     <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
                     <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
-                      Uncheck the "Blur Legendary Items" shield in the top header to inspect parameters.
+                      Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
                     </p>
                   </div>
                 ) : (
@@ -1395,9 +1464,7 @@ function App() {
                       {selectedItem.actions && selectedItem.actions !== 'None' && (
                         <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                           <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
-                          <div style={{ color: '#88ffaa', fontSize: '0.85rem' }}>
-                            {selectedItem.actions.split(', ').filter(act => !act.includes('SourceID') && !act.includes('Source')).join(', ')}
-                          </div>
+                          <div>{renderEffectBadges(selectedItem.actions)}</div>
                         </div>
                       )}
                     </div>
@@ -1436,6 +1503,9 @@ function App() {
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('type')}>Classification</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('stackSize')}>Stack Size</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness</th>
+                      <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value</th>
                     </tr>
@@ -1472,6 +1542,13 @@ function App() {
                             {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                           </td>
                           <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.stackSize} items</td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
+                          </td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                            {item.toughness > 0 ? `+${item.toughness}` : '-'}
+                          </td>
+                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
                           <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
                             {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -1497,7 +1574,7 @@ function App() {
                     })}
                     {getSortedItems('resources').length === 0 && (
                       <tr>
-                        <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
+                        <td colSpan="10" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -1518,7 +1595,7 @@ function App() {
                     <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
                     <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
-                      Uncheck the "Blur Legendary Items" shield in the top header to inspect parameters.
+                      Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
                     </p>
                   </div>
                 ) : (
@@ -1581,9 +1658,7 @@ function App() {
                       {selectedItem.actions && selectedItem.actions !== 'None' && (
                         <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                           <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
-                          <div style={{ color: '#88ffaa', fontSize: '0.85rem' }}>
-                            {selectedItem.actions.split(', ').filter(act => !act.includes('SourceID') && !act.includes('Source')).join(', ')}
-                          </div>
+                          <div>{renderEffectBadges(selectedItem.actions)}</div>
                         </div>
                       )}
                     </div>
@@ -1715,7 +1790,7 @@ function App() {
                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <img 
                                 src={`/game_icons/${r.iconFile}`} 
-                                alt="" 
+                                      alt="" 
                                 style={{ width: '16px', height: '16px', imageRendering: 'pixelated', borderRadius: '2px' }}
                                 onError={(e) => { e.target.style.display = 'none'; }}
                               />
