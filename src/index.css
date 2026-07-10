@@ -61,6 +61,18 @@ body.light-theme .app-container {
   background-image: none !important;
 }
 
+body.light-theme .switch-label {
+  color: #a54611 !important;
+  border-color: rgba(165, 70, 17, 0.4) !important;
+  background: rgba(165, 70, 17, 0.05) !important;
+  font-family: var(--font-sans) !important;
+}
+
+body.light-theme .switch-track {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  border-color: rgba(165, 70, 17, 0.4) !important;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
