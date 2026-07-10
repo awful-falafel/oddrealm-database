@@ -90,14 +90,23 @@ function App() {
       return false;
     }
 
+    // Explicit 1h / 2h word check to catch modded or remaining items
+    const isExplicitWeapon = name.includes(' 1h') || name.includes(' 2h') || name.includes('(1h)') || name.includes('(2h)') || id.includes('_1h') || id.includes('_2h');
+    if (isExplicitWeapon) {
+      // Ensure it is not a gathering tool
+      const isGatheringTool = name.includes('pickaxe') || name.includes('axe') || name.includes('hammer') || name.includes('chisel') || name.includes('needle') || name.includes('knife') || name.includes('saw') || name.includes('trowel') || name.includes('spoon');
+      if (!isGatheringTool) {
+        return true;
+      }
+    }
+
     // Whitelist of weapon-specific keywords to separate them from gathering/production tools
     const weaponKeywords = [
       'sword', 'bow', 'crossbow', 'dagger', 'flail', 'spear', 'halberd', 'mace', 'club', 
       'atlatl', 'sling', 'bolas', 'whip', 'orb', 'scythe', 'staff', 'macuahuitl', 'gladius', 
       'kukri', 'blade', 'vanguard', 'thresk', 'rapier', 'greatsword', 'claymore', 'katana', 
       'lances', 'lance', 'trident', 'morningstar', 'cudgel', 'bastard', 'practice', 'atlatl', 
-      'pointy stick', 'war axe', 'battle axe', 'battleaxe', 'warhammer', 'war hammer',
-      'kris', 'axeward', 'stick', '1h', '2h'
+      'pointy stick', 'war axe', 'battle axe', 'battleaxe', 'warhammer', 'war hammer', 'kris'
     ];
 
     return weaponKeywords.some(kw => name.includes(kw) || id.includes(kw));
@@ -143,6 +152,16 @@ function App() {
   const formatUnlockText = (text) => {
     if (!text || text === 'None' || text === 'None (Start)') return '-';
     return text;
+  };
+
+  const isSpoiler = (item) => {
+    if (!item) return false;
+    if (item.rarity === 'legendary') return true;
+    if (item.rarity === 'epic') {
+      const r = item.unlockResearch;
+      return !r || r === 'None' || r === 'None (Start)';
+    }
+    return false;
   };
 
   // Lists of options dynamically derived from items in glossary
@@ -479,10 +498,10 @@ function App() {
           <button onClick={() => setSelectedItem(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
         </div>
 
-        {hideSpoilers && selectedItem.rarity === 'legendary' ? (
+        {hideSpoilers && isSpoiler(selectedItem) ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', border: '1px dashed #ff8000', borderRadius: '8px', background: 'rgba(255, 128, 0, 0.03)' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
-            <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
+            <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Spoiler Locked</div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
               Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
             </p>
@@ -571,7 +590,7 @@ function App() {
           position: relative;
         }
         .spoiler-blurred-container::after {
-          content: 'L E G E N D A R Y';
+          content: 'S P O I L E R';
           position: absolute;
           left: 50%;
           top: 50%;
@@ -731,7 +750,7 @@ function App() {
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 2.5.0</div>
+          <div>Explorer Version: 2.6.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -781,14 +800,14 @@ function App() {
                   backgroundColor: hideSpoilers ? '#ff8000' : '#9d9d9d'
                 }} />
               </div>
-              <span style={{ fontWeight: 600 }}>🔒 Blur Legendary Spoilers</span>
+              <span style={{ fontWeight: 600 }}>Blur Legendary Spoilers</span>
             </label>
 
             {/* Universal Search Container */}
             <div style={{ position: 'relative', width: '320px' }}>
               <input 
                 type="text" 
-                placeholder="Search anything... (e.g. \\+[0-9]\\sFishing)" 
+                placeholder="Global Search (Regex works!)" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{ 
@@ -817,8 +836,7 @@ function App() {
                   zIndex: 100
                 }}>
                   {searchResults.map(result => {
-                    const isLegendary = result.data?.rarity === 'legendary';
-                    const isBlurred = hideSpoilers && isLegendary;
+                    const isBlurred = hideSpoilers && isSpoiler(result.data);
                     return (
                       <div 
                         key={result.uniqueKey} 
@@ -877,7 +895,7 @@ function App() {
                   backgroundColor: 'var(--accent-cyan)'
                 }} />
               </div>
-              <span style={{ fontWeight: 600 }}>{theme === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
+              <span style={{ fontWeight: 600 }}>{theme === 'light' ? 'Light Mode' : 'Dark Mode'}</span>
             </label>
           </div>
         </div>
@@ -1048,7 +1066,7 @@ function App() {
                   </thead>
                   <tbody>
                     {getSortedItems('weapons').map((item, index) => {
-                      const isBlurred = hideSpoilers && item.rarity === 'legendary';
+                      const isBlurred = hideSpoilers && isSpoiler(item);
                       return (
                         <tr 
                           key={item.id} 
@@ -1176,7 +1194,7 @@ function App() {
                   </thead>
                   <tbody>
                     {getSortedItems('tools').map((item, index) => {
-                      const isBlurred = hideSpoilers && item.rarity === 'legendary';
+                      const isBlurred = hideSpoilers && isSpoiler(item);
                       return (
                         <tr 
                           key={item.id} 
@@ -1304,7 +1322,7 @@ function App() {
                   </thead>
                   <tbody>
                     {getSortedItems('gear').map((item, index) => {
-                      const isBlurred = hideSpoilers && item.rarity === 'legendary';
+                      const isBlurred = hideSpoilers && isSpoiler(item);
                       return (
                         <tr 
                           key={item.id} 
@@ -1424,7 +1442,7 @@ function App() {
                   </thead>
                   <tbody>
                     {getSortedItems('food').map((item, index) => {
-                      const isBlurred = hideSpoilers && item.rarity === 'legendary';
+                      const isBlurred = hideSpoilers && isSpoiler(item);
                       return (
                         <tr 
                           key={item.id} 
@@ -1536,7 +1554,7 @@ function App() {
                   </thead>
                   <tbody>
                     {getSortedItems('potions').map((item, index) => {
-                      const isBlurred = hideSpoilers && item.rarity === 'legendary';
+                      const isBlurred = hideSpoilers && isSpoiler(item);
                       return (
                         <tr 
                           key={item.id} 
@@ -1655,7 +1673,7 @@ function App() {
                   </thead>
                   <tbody>
                     {getSortedItems('resources').map((item, index) => {
-                      const isBlurred = hideSpoilers && item.rarity === 'legendary';
+                      const isBlurred = hideSpoilers && isSpoiler(item);
                       return (
                         <tr 
                           key={item.id} 
