@@ -13,6 +13,15 @@ function App() {
   
   const [highlightId, setHighlightId] = useState(null);
   const [hideSpoilers, setHideSpoilers] = useState(true);
+  const [theme, setTheme] = useState('dark');
+
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light-theme');
+    } else {
+      document.body.classList.remove('light-theme');
+    }
+  }, [theme]);
 
   // Filters
   const [rarityFilter, setRarityFilter] = useState('all');
@@ -705,6 +714,31 @@ function App() {
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Theme Toggle Switch */}
+            <label className="switch-label" style={{ 
+              color: 'var(--text-primary)', 
+              borderColor: 'var(--border-glass)',
+              background: 'var(--bg-secondary)' 
+            }}>
+              <input 
+                type="checkbox" 
+                checked={theme === 'light'} 
+                onChange={(e) => setTheme(e.target.checked ? 'light' : 'dark')}
+                style={{ display: 'none' }}
+              />
+              <div className="switch-track" style={{ 
+                backgroundColor: theme === 'light' ? 'rgba(176, 124, 3, 0.25)' : 'rgba(0, 0, 0, 0.5)',
+                borderColor: theme === 'light' ? 'var(--accent-cyan)' : 'var(--border-glass)'
+              }}>
+                <div className="switch-thumb" style={{ 
+                  left: theme === 'light' ? '18px' : '2px',
+                  backgroundColor: 'var(--accent-cyan)',
+                  boxShadow: `0 0 6px var(--accent-cyan)`
+                }} />
+              </div>
+              <span style={{ fontWeight: 600 }}>{theme === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
+            </label>
+
             {/* Spoiler Shield Checkbox */}
             <label className="switch-label">
               <input 

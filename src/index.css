@@ -29,6 +29,23 @@
   --transition-normal: 0.25s ease-in-out;
 }
 
+body.light-theme {
+  --bg-primary: #fbf9f5;
+  --bg-secondary: #f3ece2;
+  --bg-tertiary: #e7dac9;
+  --bg-glass: rgba(243, 236, 226, 0.85);
+  --border-glass: #d2c1ad;
+  
+  --text-primary: #2d2319;
+  --text-secondary: #5a4b3c;
+  --text-muted: #8c7c6c;
+  
+  --accent-cyan: #b07c03;
+  --accent-cyan-glow: rgba(176, 124, 3, 0.15);
+  --accent-purple: #9c3f0b;
+  --accent-purple-glow: rgba(156, 63, 11, 0.15);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
