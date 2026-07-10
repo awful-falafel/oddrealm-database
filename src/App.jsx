@@ -48,19 +48,16 @@ function App() {
     const name = (item.name || '').toLowerCase();
     const id = (item.id || '').toLowerCase();
 
-    // Standard gathering and crafting tools keyword lists
-    const toolKeywords = ['hatchet', 'pickaxe', 'needle', 'carving', 'chisel', 'fishing', 'tongs', 'hammer', 'sickle', 'shears', 'spade', 'bucket', 'anvil', 'saw', 'hoe'];
-    const matchesTool = toolKeywords.some(kw => name.includes(kw) || id.includes(kw));
+    // Whitelist of weapon-specific keywords to separate them from gathering/production tools
+    const weaponKeywords = [
+      'sword', 'bow', 'crossbow', 'dagger', 'flail', 'spear', 'halberd', 'mace', 'club', 
+      'atlatl', 'sling', 'bolas', 'whip', 'orb', 'scythe', 'staff', 'macuahuitl', 'gladius', 
+      'kukri', 'blade', 'vanguard', 'thresk', 'rapier', 'greatsword', 'claymore', 'katana', 
+      'lances', 'lance', 'trident', 'morningstar', 'cudgel', 'bastard', 'practice', 'atlatl', 
+      'pointy stick', 'war axe', 'battle axe', 'battleaxe', 'warhammer', 'war hammer'
+    ];
 
-    if (matchesTool) {
-      // Exceptions for combat variants of tools
-      if (name.includes('war') || name.includes('battle') || id.includes('war') || id.includes('battle')) {
-        return true;
-      }
-      return false;
-    }
-
-    return item.maxDamage > 0;
+    return weaponKeywords.some(kw => name.includes(kw) || id.includes(kw));
   };
 
   // Items filtering & sorting logic
@@ -242,7 +239,7 @@ function App() {
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 1.4.0</div>
+          <div>Explorer Version: 1.5.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -370,6 +367,7 @@ function App() {
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('attacks')}>Attack Type</th>
                       <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value</th>
                     </tr>
                   </thead>
@@ -402,12 +400,13 @@ function App() {
                         <td style={{ padding: '8px', fontWeight: 600, color: '#ff5555' }}>{`${item.minDamage}-${item.maxDamage}`}</td>
                         <td style={{ padding: '8px', color: '#ffc233' }}>{item.attacks !== 'None' ? item.attacks : '-'}</td>
                         <td style={{ padding: '8px', color: '#88ffaa', fontSize: '0.8rem' }}>{formatEffects(item.actions)}</td>
+                        <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }}>{item.unlockResearch || 'None (Start)'}</td>
                         <td style={{ padding: '8px', color: 'var(--accent-cyan)' }}>{item.buyValue} Ren</td>
                       </tr>
                     ))}
                     {getSortedItems('weapons').length === 0 && (
                       <tr>
-                        <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
+                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -437,6 +436,10 @@ function App() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
                     <span>Weapon</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
+                    <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedItem.unlockResearch || 'None (Start)'}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
@@ -485,7 +488,7 @@ function App() {
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>⛏️ Tools</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Items designed for resource gathering, farming, cooking, and workshop tasks.</p>
+                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Spoons, pickaxes, axes, needles, chisels, and harvesting implements.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
@@ -512,6 +515,7 @@ function App() {
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
                       <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value</th>
                     </tr>
                   </thead>
@@ -542,12 +546,13 @@ function App() {
                           {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                         </td>
                         <td style={{ padding: '8px', color: '#88ffaa', fontSize: '0.8rem' }}>{formatEffects(item.actions)}</td>
+                        <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }}>{item.unlockResearch || 'None (Start)'}</td>
                         <td style={{ padding: '8px', color: 'var(--accent-cyan)' }}>{item.buyValue} Ren</td>
                       </tr>
                     ))}
                     {getSortedItems('tools').length === 0 && (
                       <tr>
-                        <td colSpan="5" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
+                        <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -577,6 +582,10 @@ function App() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
                     <span>Tool</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
+                    <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedItem.unlockResearch || 'None (Start)'}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
@@ -648,6 +657,7 @@ function App() {
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('slots')}>Equip Slot</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness</th>
                       <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value</th>
                     </tr>
                   </thead>
@@ -680,12 +690,13 @@ function App() {
                         <td style={{ padding: '8px', color: '#ffc233' }}>{item.slots}</td>
                         <td style={{ padding: '8px', fontWeight: 600, color: '#88aaff' }}>{item.toughness > 0 ? `+${item.toughness}` : '-'}</td>
                         <td style={{ padding: '8px', color: '#88ffaa', fontSize: '0.8rem' }}>{formatEffects(item.actions)}</td>
+                        <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }}>{item.unlockResearch || 'None (Start)'}</td>
                         <td style={{ padding: '8px', color: 'var(--accent-cyan)' }}>{item.buyValue} Ren</td>
                       </tr>
                     ))}
                     {getSortedItems('gear').length === 0 && (
                       <tr>
-                        <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
+                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -717,6 +728,10 @@ function App() {
                     <span>{selectedItem.type.replace('tag_item_type_', '')}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
+                    <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedItem.unlockResearch || 'None (Start)'}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
                     <span style={{ fontWeight: 600, color: { common: '#9d9d9d', uncommon: '#1eff00', rare: '#0070ff', epic: '#a335ee', legendary: '#ff8000' }[selectedItem.rarity] || '#9d9d9d' }}>
                       {selectedItem.rarity.charAt(0).toUpperCase() + selectedItem.rarity.slice(1)}
@@ -734,6 +749,12 @@ function App() {
                     <span style={{ color: 'var(--text-muted)' }}>Equip Slots:</span>
                     <span>{selectedItem.slots}</span>
                   </div>
+                  {selectedItem.toughness > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Toughness (Armor):</span>
+                      <span style={{ color: '#88aaff', fontWeight: 'bold' }}>+{selectedItem.toughness}</span>
+                    </div>
+                  )}
                   {selectedItem.actions && selectedItem.actions !== 'None' && (
                     <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                       <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
@@ -784,6 +805,7 @@ function App() {
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
                       <th style={{ padding: '10px 8px' }}>Decay Rule</th>
                       <th style={{ padding: '10px 8px' }}>Effects / Attributes</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value</th>
                     </tr>
                   </thead>
@@ -816,12 +838,13 @@ function App() {
                         </td>
                         <td style={{ padding: '8px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{item.decayInfo !== 'None' ? item.decayInfo : '-'}</td>
                         <td style={{ padding: '8px', color: '#88ffaa', fontSize: '0.8rem' }}>{formatEffects(item.actions)}</td>
+                        <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }}>{item.unlockResearch || 'None (Start)'}</td>
                         <td style={{ padding: '8px', color: 'var(--accent-cyan)' }}>{item.buyValue} Ren</td>
                       </tr>
                     ))}
                     {getSortedItems('food').length === 0 && (
                       <tr>
-                        <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
+                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -851,6 +874,10 @@ function App() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
                     <span>{selectedItem.type}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
+                    <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedItem.unlockResearch || 'None (Start)'}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
@@ -919,6 +946,7 @@ function App() {
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('type')}>Classification</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('stackSize')}>Stack Size</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value</th>
                     </tr>
                   </thead>
@@ -950,12 +978,13 @@ function App() {
                           {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
                         </td>
                         <td style={{ padding: '8px' }}>{item.stackSize} items</td>
+                        <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }}>{item.unlockResearch || 'None (Start)'}</td>
                         <td style={{ padding: '8px', color: 'var(--accent-cyan)' }}>{item.buyValue} Ren</td>
                       </tr>
                     ))}
                     {getSortedItems('resources').length === 0 && (
                       <tr>
-                        <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
+                        <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your search filters.</td>
                       </tr>
                     )}
                   </tbody>
@@ -985,6 +1014,10 @@ function App() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
                     <span>{selectedItem.type.replace('tag_item_type_', '')}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
+                    <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedItem.unlockResearch || 'None (Start)'}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
@@ -1049,7 +1082,7 @@ function App() {
                     <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
                       <th style={{ padding: '10px 8px' }}>Icon</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('name')}>Name {blocksSort.field === 'name' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('unlockResearch')}>Requirements</th>
+                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('unlockResearch')}>Unlocked By {blocksSort.field === 'unlockResearch' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('roomQuality')}>Room Quality</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('toughness')}>Toughness</th>
                       <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('cost')}>Path Cost</th>
@@ -1078,7 +1111,7 @@ function App() {
                           <div style={{ fontWeight: 600 }}>{block.name}</div>
                           <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{block.id}</div>
                         </td>
-                        <td style={{ padding: '8px', color: 'var(--text-secondary)' }}>{block.unlockResearch}</td>
+                        <td style={{ padding: '8px', color: '#ffc233', fontWeight: 500 }}>{block.unlockResearch || 'None (Start)'}</td>
                         <td style={{ padding: '8px', fontWeight: 600, color: 'var(--accent-cyan)' }}>+{block.roomQuality}</td>
                         <td style={{ padding: '8px', color: '#ff8888' }}>{block.toughness || '-'}</td>
                         <td style={{ padding: '8px' }}>{block.cost} pts</td>
@@ -1119,7 +1152,7 @@ function App() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
-                    <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedBlock.unlockResearch}</span>
+                    <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedBlock.unlockResearch || 'None (Start)'}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Room Quality Contribution:</span>
