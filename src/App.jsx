@@ -450,8 +450,8 @@ function App() {
         ) : (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '64px', height: '64px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '6px' }}>
-                <img src={selectedItem.iconFilename ? `/game_icons/${selectedItem.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} alt="" />
+              <div style={{ width: '128px', height: '128px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '12px' }}>
+                <img src={selectedItem.iconFilename ? `/game_icons/${selectedItem.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%' }} alt="" />
               </div>
               <div>
                 <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedItem.name}</h2>
@@ -468,7 +468,7 @@ function App() {
                       <img 
                         src={`/game_icons/${r.iconFile}`} 
                         alt="" 
-                        style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
+                        style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                         onError={(e) => { e.target.style.display = 'none'; }}
                       />
                       <span style={{ color: '#ffc233', fontWeight: 'bold', fontSize: '0.85rem' }}>{r.name}</span>
@@ -597,6 +597,11 @@ function App() {
           font-size: 0.8rem;
           cursor: pointer;
         }
+        img {
+          image-rendering: pixelated !important;
+          image-rendering: crisp-edges !important;
+          -ms-interpolation-mode: nearest-neighbor !important;
+        }
       `}</style>
 
       {/* SIDEBAR */}
@@ -667,7 +672,7 @@ function App() {
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 2.1.0</div>
+          <div>Explorer Version: 2.2.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -776,7 +781,7 @@ function App() {
                             <img 
                               src={result.data?.iconFilename ? `/game_icons/${result.data.iconFilename}` : `/game_icons/default.png`} 
                               alt=""
-                              style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }}
+                              style={{ width: '48px', height: '48px' }}
                               onError={(e) => { e.target.style.display = 'none'; }}
                             />
                           ) : (
@@ -958,7 +963,7 @@ function App() {
                             <img 
                               src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
                               alt=""
-                              style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }}
+                              style={{ width: '48px', height: '48px' }}
                               onError={(e) => { e.target.style.display = 'none'; }}
                             />
                           </td>
@@ -987,7 +992,7 @@ function App() {
                                     <img 
                                       src={`/game_icons/${r.iconFile}`} 
                                       alt="" 
-                                      style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
+                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                                       onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                     <span>{r.name}</span>
@@ -1081,7 +1086,7 @@ function App() {
                             <img 
                               src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
                               alt=""
-                              style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }}
+                              style={{ width: '48px', height: '48px' }}
                               onError={(e) => { e.target.style.display = 'none'; }}
                             />
                           </td>
@@ -1107,7 +1112,7 @@ function App() {
                                     <img 
                                       src={`/game_icons/${r.iconFile}`} 
                                       alt="" 
-                                      style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
+                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                                       onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                     <span>{r.name}</span>
@@ -1204,7 +1209,7 @@ function App() {
                             <img 
                               src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
                               alt=""
-                              style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }}
+                              style={{ width: '48px', height: '48px' }}
                               onError={(e) => { e.target.style.display = 'none'; }}
                             />
                           </td>
@@ -1229,7 +1234,7 @@ function App() {
                                     <img 
                                       src={`/game_icons/${r.iconFile}`} 
                                       alt="" 
-                                      style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
+                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                                       onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                     <span>{r.name}</span>
@@ -1319,7 +1324,7 @@ function App() {
                             <img 
                               src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
                               alt=""
-                              style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }}
+                              style={{ width: '48px', height: '48px' }}
                               onError={(e) => { e.target.style.display = 'none'; }}
                             />
                           </td>
@@ -1344,7 +1349,7 @@ function App() {
                                     <img 
                                       src={`/game_icons/${r.iconFile}`} 
                                       alt="" 
-                                      style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
+                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                                       onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                     <span>{r.name}</span>
@@ -1426,7 +1431,7 @@ function App() {
                             <img 
                               src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
                               alt=""
-                              style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }}
+                              style={{ width: '48px', height: '48px' }}
                               onError={(e) => { e.target.style.display = 'none'; }}
                             />
                           </td>
@@ -1449,7 +1454,7 @@ function App() {
                                     <img 
                                       src={`/game_icons/${r.iconFile}`} 
                                       alt="" 
-                                      style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
+                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                                       onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                     <span>{r.name}</span>
@@ -1540,7 +1545,7 @@ function App() {
                             <img 
                               src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
                               alt=""
-                              style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }}
+                              style={{ width: '48px', height: '48px' }}
                               onError={(e) => { e.target.style.display = 'none'; }}
                             />
                           </td>
@@ -1568,7 +1573,7 @@ function App() {
                                     <img 
                                       src={`/game_icons/${r.iconFile}`} 
                                       alt="" 
-                                      style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
+                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                                       onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                     <span>{r.name}</span>
@@ -1645,7 +1650,7 @@ function App() {
                           <img 
                             src={block.iconFilename ? `/game_icons/${block.iconFilename}` : `/game_icons/default.png`} 
                             alt=""
-                            style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }}
+                            style={{ width: '48px', height: '48px' }}
                             onError={(e) => { e.target.style.display = 'none'; }}
                           />
                         </td>
@@ -1661,7 +1666,7 @@ function App() {
                                   <img 
                                     src={`/game_icons/${r.iconFile}`} 
                                     alt="" 
-                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
+                                    style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                                     onError={(e) => { e.target.style.display = 'none'; }}
                                   />
                                   <span>{r.name}</span>
@@ -1696,8 +1701,8 @@ function App() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ width: '64px', height: '64px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '6px' }}>
-                    <img src={selectedBlock.iconFilename ? `/game_icons/${selectedBlock.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} alt="" />
+                  <div style={{ width: '128px', height: '128px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '12px' }}>
+                    <img src={selectedBlock.iconFilename ? `/game_icons/${selectedBlock.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%' }} alt="" />
                   </div>
                   <div>
                     <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedBlock.name}</h2>
@@ -1720,7 +1725,7 @@ function App() {
                               <img 
                                 src={`/game_icons/${r.iconFile}`} 
                                 alt="" 
-                                style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
+                                style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                                 onError={(e) => { e.target.style.display = 'none'; }}
                               />
                               <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
