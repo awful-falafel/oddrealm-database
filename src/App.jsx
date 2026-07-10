@@ -125,7 +125,7 @@ function App() {
   };
 
   const formatUnlockText = (text) => {
-    if (!text || text === 'None') return '-';
+    if (!text || text === 'None' || text === 'None (Start)') return '-';
     return text;
   };
 
