@@ -339,6 +339,45 @@ function App() {
           white-space: nowrap;
           z-index: 2;
         }
+        .switch-label {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          cursor: pointer;
+          font-size: 0.8rem;
+          color: #ff8000;
+          border: 1px solid rgba(255, 128, 0, 0.3);
+          padding: 6px 16px;
+          border-radius: 20px;
+          background: rgba(255, 128, 0, 0.04);
+          user-select: none;
+          white-space: nowrap;
+          transition: all 0.2s ease;
+        }
+        .switch-label:hover {
+          background: rgba(255, 128, 0, 0.08);
+          border-color: rgba(255, 128, 0, 0.6);
+          box-shadow: 0 0 10px rgba(255, 128, 0, 0.15);
+        }
+        .switch-track {
+          position: relative;
+          width: 34px;
+          height: 18px;
+          background-color: rgba(0, 0, 0, 0.5);
+          border: 1px solid rgba(255, 128, 0, 0.4);
+          border-radius: 10px;
+          transition: all 0.2s ease;
+        }
+        .switch-thumb {
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          width: 12px;
+          height: 12px;
+          background-color: #9d9d9d;
+          border-radius: 50%;
+          transition: all 0.2s ease;
+        }
       `}</style>
 
       {/* SIDEBAR */}
@@ -436,14 +475,24 @@ function App() {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Spoiler Shield Checkbox */}
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.8rem', color: '#ff8000', border: '1px solid rgba(255, 128, 0, 0.25)', padding: '6px 12px', borderRadius: '20px', background: 'rgba(255, 128, 0, 0.05)', userSelect: 'none' }}>
+            <label className="switch-label">
               <input 
                 type="checkbox" 
                 checked={hideSpoilers} 
                 onChange={(e) => setHideSpoilers(e.target.checked)}
-                style={{ cursor: 'pointer' }}
+                style={{ display: 'none' }}
               />
-              <span style={{ fontWeight: 600 }}>🔒 Blur Legendary Items</span>
+              <div className="switch-track" style={{ 
+                backgroundColor: hideSpoilers ? 'rgba(255, 128, 0, 0.25)' : 'rgba(0, 0, 0, 0.5)',
+                borderColor: hideSpoilers ? '#ff8000' : 'rgba(255, 128, 0, 0.4)'
+              }}>
+                <div className="switch-thumb" style={{ 
+                  left: hideSpoilers ? '18px' : '2px',
+                  backgroundColor: hideSpoilers ? '#ff8000' : '#9d9d9d',
+                  boxShadow: hideSpoilers ? '0 0 6px #ff8000' : 'none'
+                }} />
+              </div>
+              <span style={{ fontWeight: 600 }}>🔒 Blur Legendary Spoilers</span>
             </label>
 
             {/* Universal Search Container */}
