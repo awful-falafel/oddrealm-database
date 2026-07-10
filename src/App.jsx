@@ -34,6 +34,35 @@ function App() {
     fetchGlossary();
   }, []);
 
+  // Helper classification methods
+  const isShield = (item) => {
+    const name = (item.name || '').toLowerCase();
+    const id = (item.id || '').toLowerCase();
+    return name.includes('shield') || name.includes('buckler') || id.includes('shield') || id.includes('buckler');
+  };
+
+  const isWeapon = (item) => {
+    if (item.type !== 'tool') return false;
+    if (isShield(item)) return false;
+
+    const name = (item.name || '').toLowerCase();
+    const id = (item.id || '').toLowerCase();
+
+    // Standard gathering and crafting tools keyword lists
+    const toolKeywords = ['hatchet', 'pickaxe', 'needle', 'carving', 'chisel', 'fishing', 'tongs', 'hammer', 'sickle', 'shears', 'spade', 'bucket', 'anvil', 'saw', 'hoe'];
+    const matchesTool = toolKeywords.some(kw => name.includes(kw) || id.includes(kw));
+
+    if (matchesTool) {
+      // Exceptions for combat variants of tools
+      if (name.includes('war') || name.includes('battle') || id.includes('war') || id.includes('battle')) {
+        return true;
+      }
+      return false;
+    }
+
+    return item.maxDamage > 0;
+  };
+
   // Items filtering & sorting logic
   const handleSortItems = (field) => {
     setItemsSort(prev => ({
@@ -55,13 +84,13 @@ function App() {
 
       // Classify views
       if (viewName === 'weapons') {
-        return item.type === 'tool' && item.maxDamage > 0;
+        return isWeapon(item);
       }
       if (viewName === 'tools') {
-        return item.type === 'tool' && (item.maxDamage === 0 || !item.maxDamage);
+        return item.type === 'tool' && !isWeapon(item) && !isShield(item);
       }
       if (viewName === 'gear') {
-        return item.type === 'gear' || item.type === 'trinket';
+        return item.type === 'gear' || item.type === 'trinket' || isShield(item);
       }
       if (viewName === 'food') {
         return foodTypes.includes(item.type);
@@ -213,7 +242,7 @@ function App() {
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 1.3.0</div>
+          <div>Explorer Version: 1.4.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -238,7 +267,7 @@ function App() {
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Weapons</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Swords, bows, crossbows, practice daggers, and combat equipment.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.items?.filter(i => i.type === 'tool' && i.maxDamage > 0).length || 0} Registered Weapons
+                  {glossary.items?.filter(isWeapon).length || 0} Registered Weapons
                 </div>
               </div>
 
@@ -247,7 +276,7 @@ function App() {
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Tools</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Axes, pickaxes, hammers, chisels, and harvesting implements.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.items?.filter(i => i.type === 'tool' && (!i.maxDamage || i.maxDamage === 0)).length || 0} Registered Tools
+                  {glossary.items?.filter(i => i.type === 'tool' && !isWeapon(i) && !isShield(i)).length || 0} Registered Tools
                 </div>
               </div>
 
@@ -256,7 +285,7 @@ function App() {
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)' }}>Armor & Gear</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Helmets, chestplates, boots, gauntlets, and defensive shields.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.items?.filter(i => i.type === 'gear' || i.type === 'trinket').length || 0} Armor pieces
+                  {glossary.items?.filter(i => i.type === 'gear' || i.type === 'trinket' || isShield(i)).length || 0} Armor & Shield pieces
                 </div>
               </div>
             </div>
@@ -310,7 +339,7 @@ function App() {
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>🗡️ Weapons</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Items used in combat, displaying physical damage parameters and attack techniques.</p>
+                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Combat-specific items designed to inflict damage, showing ranges and attack types.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
@@ -456,7 +485,7 @@ function App() {
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>⛏️ Tools</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Items used for resource gathering and production tasks. These do not have combat damage values.</p>
+                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Items designed for resource gathering, farming, cooking, and workshop tasks.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} style={{ padding: '8px', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' }}>
@@ -705,16 +734,6 @@ function App() {
                     <span style={{ color: 'var(--text-muted)' }}>Equip Slots:</span>
                     <span>{selectedItem.slots}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Decay Rule:</span>
-                    <span>{selectedItem.decayInfo}</span>
-                  </div>
-                  {selectedItem.toughness > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Toughness (Armor):</span>
-                      <span style={{ color: '#88aaff', fontWeight: 'bold' }}>+{selectedItem.toughness}</span>
-                    </div>
-                  )}
                   {selectedItem.actions && selectedItem.actions !== 'None' && (
                     <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
                       <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
