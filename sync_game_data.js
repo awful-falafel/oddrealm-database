@@ -10,23 +10,44 @@ const exportPath = path.join(__dirname, 'game_asset_export', 'ExportedProject');
 
 console.log('=== ODD REALM DATABASE HARVESTER & CLEANUP UTILITY ===\n');
 
-// 1. Verify that the user has exported the game files to game_asset_export/ExportedProject
+// 1. Verify that the user has exported the game files
 if (!fs.existsSync(exportPath)) {
-  console.error(`ERROR: ExportedProject folder not found at:`);
-  console.log(`   ${exportPath}\n`);
-  console.log('To update the database using the AssetRipper GUI:');
-  console.log('1. Launch "AssetRipper.GUI.Free.exe" on your computer.');
-  console.log('2. Click "File > Open Folder" and select:');
-  console.log('   E:\\Program Files (x86)\\Steam\\steamapps\\common\\Odd Realm\\OddRealm_Data');
-  console.log('3. In AssetRipper, select "Export > Export All Files" and choose this destination:');
-  console.log(`   ${exportPath}`);
-  console.log('\nOnce the export finishes in AssetRipper, run this script again to clean up and compile!');
+  printExportInstructions();
+  process.exit(1);
+}
+
+// 2. Auto-hoist if AssetRipper nested the output as ExportedProject/ExportedProject/...
+const nestedPath = path.join(exportPath, 'ExportedProject');
+if (fs.existsSync(nestedPath) && fs.lstatSync(nestedPath).isDirectory()) {
+  console.log('Detected nested ExportedProject directory. Hoisting files to root...');
+  try {
+    const items = fs.readdirSync(nestedPath);
+    items.forEach(item => {
+      const src = path.join(nestedPath, item);
+      const dest = path.join(exportPath, item);
+      if (fs.existsSync(dest)) {
+        fs.rmSync(dest, { recursive: true, force: true });
+      }
+      fs.renameSync(src, dest);
+    });
+    fs.rmdirSync(nestedPath);
+    console.log('Hoisting completed successfully.');
+  } catch (err) {
+    console.error('Failed to hoist nested directory:', err.message);
+  }
+}
+
+// Check if Assets directory exists now
+const assetsPath = path.join(exportPath, 'Assets');
+if (!fs.existsSync(assetsPath)) {
+  console.error(`ERROR: "Assets" folder not found under ${exportPath}`);
+  printExportInstructions();
   process.exit(1);
 }
 
 console.log('Exported project found. Beginning database compilation...');
 
-// 2. Rebuild the database
+// 3. Rebuild the database
 try {
   console.log('Executing build_database.js...');
   execSync('node build_database.js', { stdio: 'inherit', cwd: __dirname });
@@ -36,7 +57,7 @@ try {
   process.exit(1);
 }
 
-// 3. Clean up heavy Unity files to free up disk space
+// 4. Clean up heavy Unity files to free up disk space
 console.log('\nCleaning up heavy, unneeded assets to save disk space...');
 const assetsDir = path.join(exportPath, 'Assets');
 
@@ -57,7 +78,7 @@ if (fs.existsSync(assetsDir)) {
       }
     });
 
-    // Clean up ProjectSettings and auxiliary folders outside of Assets
+    // Clean up auxiliary folders outside of Assets (e.g. AuxiliaryFiles, ProjectSettings)
     const rootFolders = fs.readdirSync(exportPath);
     rootFolders.forEach(item => {
       const itemPath = path.join(exportPath, item);
@@ -71,4 +92,14 @@ if (fs.existsSync(assetsDir)) {
   } catch (err) {
     console.warn(`Warning: Error during workspace cleanup: ${err.message}`);
   }
+}
+
+function printExportInstructions() {
+  console.log('To update the database using the AssetRipper GUI:');
+  console.log('1. Launch "AssetRipper.GUI.Free.exe" on your computer.');
+  console.log('2. Click "File > Open Folder" and select:');
+  console.log('   E:\\Program Files (x86)\\Steam\\steamapps\\common\\Odd Realm\\OddRealm_Data');
+  console.log('3. In AssetRipper, select "Export > Export All Files" and choose this destination:');
+  console.log(`   ${exportPath}`);
+  console.log('\nOnce the export finishes in AssetRipper, run this script again to clean up and compile!');
 }

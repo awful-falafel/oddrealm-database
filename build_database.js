@@ -10,12 +10,34 @@ const publicIconsDir = path.join(__dirname, 'public', 'game_icons');
 const publicAtlasPath = path.join(__dirname, 'public', 'game_atlas.png');
 const srcDatabasePath = path.join(__dirname, 'src', 'glossary_database.json');
 
+// Auto-hoist if AssetRipper nested the output
+const nestedPath = path.join(exportPath, 'ExportedProject');
+if (fs.existsSync(nestedPath) && fs.lstatSync(nestedPath).isDirectory()) {
+  console.log('Detected nested ExportedProject directory. Hoisting files to root...');
+  try {
+    const items = fs.readdirSync(nestedPath);
+    items.forEach(item => {
+      const src = path.join(nestedPath, item);
+      const dest = path.join(exportPath, item);
+      if (fs.existsSync(dest)) {
+        fs.rmSync(dest, { recursive: true, force: true });
+      }
+      fs.renameSync(src, dest);
+    });
+    fs.rmdirSync(nestedPath);
+    console.log('Hoisting completed successfully.');
+  } catch (err) {
+    console.error('Failed to hoist nested directory:', err.message);
+  }
+}
+
 console.log('--- STARTING ASSETS PRE-PACKAGING AND BUNDLING COMPILER ---');
 
 if (!fs.existsSync(exportPath)) {
   console.error(`Error: game_asset_export directory not found at ${exportPath}`);
   process.exit(1);
 }
+
 
 // 1. Ensure public directories exist
 if (!fs.existsSync(publicIconsDir)) {
