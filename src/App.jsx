@@ -74,6 +74,15 @@ function App() {
 
     const name = (item.name || '').toLowerCase();
     const id = (item.id || '').toLowerCase();
+    const research = (item.unlockResearch || '').toLowerCase();
+
+    // Heuristics based on research nodes
+    if (research.includes('weapon') || research.includes('marksmanship')) {
+      return true;
+    }
+    if (research.includes('tool') || research.includes('woodworking') || research.includes('stonemasonry') || research.includes('farming') || research.includes('mining') || research.includes('masonry')) {
+      return false;
+    }
 
     // Whitelist of weapon-specific keywords to separate them from gathering/production tools
     const weaponKeywords = [
