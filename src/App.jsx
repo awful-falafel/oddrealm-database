@@ -428,6 +428,82 @@ function App() {
     );
   };
 
+  // Reusable Item Inspector Component (renders all fields raw/un-formatted)
+  const renderItemInspector = () => {
+    if (!selectedItem) return null;
+    
+    return (
+      <div className="card" style={{ width: '380px', borderLeft: '2px solid var(--border-glass)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', background: 'var(--bg-secondary)', zIndex: 5 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Item Inspector</span>
+          <button onClick={() => setSelectedItem(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
+        </div>
+
+        {hideSpoilers && selectedItem.rarity === 'legendary' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', border: '1px dashed #ff8000', borderRadius: '8px', background: 'rgba(255, 128, 0, 0.03)' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
+            <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
+              Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: '64px', height: '64px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '6px' }}>
+                <img src={selectedItem.iconFilename ? `/game_icons/${selectedItem.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} alt="" />
+              </div>
+              <div>
+                <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedItem.name}</h2>
+                <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{selectedItem.id}</span>
+              </div>
+            </div>
+
+            {selectedItem.unlockResearchList && selectedItem.unlockResearchList.length > 0 && (
+              <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '10px' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '6px', fontFamily: 'var(--font-mono)' }}>unlockResearchList</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {selectedItem.unlockResearchList.map((r, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <img 
+                        src={`/game_icons/${r.iconFile}`} 
+                        alt="" 
+                        style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                      <span style={{ color: '#ffc233', fontWeight: 'bold', fontSize: '0.85rem' }}>{r.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* List all other fields raw and un-formatted */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {Object.entries(selectedItem).map(([key, value]) => {
+                if (key === 'unlockResearchList' || key === 'iconFilename') return null;
+
+                let displayVal = '';
+                if (typeof value === 'object' && value !== null) {
+                  displayVal = JSON.stringify(value);
+                } else {
+                  displayVal = String(value);
+                }
+
+                return (
+                  <div key={key} style={{ display: 'flex', flexDirection: 'column', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px', gap: '2px' }}>
+                    <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>{key}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--text-primary)', wordBreak: 'break-all' }}>{displayVal}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   const foodTypes = ['meal', 'fruit', 'vegetable', 'meat', 'fish', 'fungus', 'alcohol', 'beverage', 'egg', 'milk'];
   const resourceTypes = ['refined_material', 'ingot', 'ore', 'gem', 'stone', 'wood', 'seed', 'plant_material', 'animal_byproduct', 'remains', 'container', 'garbage', 'soil', 'trinket', 'OnJobDisposedTagObjectID'];
 
@@ -591,7 +667,7 @@ function App() {
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 2.0.0</div>
+          <div>Explorer Version: 2.1.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -936,108 +1012,8 @@ function App() {
               </div>
             </div>
 
-            {/* DETAIL DRAWER */}
-            {selectedItem && (
-              <div className="card" style={{ width: '380px', borderLeft: '2px solid var(--border-glass)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Item Inspector</span>
-                  <button onClick={() => setSelectedItem(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
-                </div>
-
-                {hideSpoilers && selectedItem.rarity === 'legendary' ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', border: '1px dashed #ff8000', borderRadius: '8px', background: 'rgba(255, 128, 0, 0.03)' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
-                    <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
-                      Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ width: '64px', height: '64px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '6px' }}>
-                        <img src={selectedItem.iconFilename ? `/game_icons/${selectedItem.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} alt="" />
-                      </div>
-                      <div>
-                        <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedItem.name}</h2>
-                        <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{selectedItem.id}</span>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
-                        <span>Weapon</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
-                        <span>
-                          {selectedItem.unlockResearchList && selectedItem.unlockResearchList.length > 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                              {selectedItem.unlockResearchList.map((r, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <img 
-                                    src={`/game_icons/${r.iconFile}`} 
-                                    alt="" 
-                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
-                                    onError={(e) => { e.target.style.display = 'none'; }}
-                                  />
-                                  <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedItem.unlockResearch || 'None (Start)'}</span>
-                          )}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
-                        <span style={{ fontWeight: 600, color: getRarityColor(selectedItem.rarity) }}>
-                          {selectedItem.rarity.charAt(0).toUpperCase() + selectedItem.rarity.slice(1)}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Value:</span>
-                        <span style={{ color: 'var(--accent-cyan)' }}>{selectedItem.buyValue} Ren</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Damage Range:</span>
-                        <span style={{ color: '#ff5555', fontWeight: 'bold' }}>{selectedItem.minDamage} - {selectedItem.maxDamage} Dmg</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Attack Classification:</span>
-                        <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{getAttackTypeLabel(selectedItem.attacks)}</span>
-                      </div>
-                      {selectedItem.attacks && selectedItem.attacks !== 'None' && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                          <span style={{ color: 'var(--text-muted)' }}>Weapon Attack Speed/Range:</span>
-                          <span style={{ color: '#ffc233' }}>{selectedItem.attacks}</span>
-                        </div>
-                      )}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Equip Slots:</span>
-                        <span>{selectedItem.slots}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Stack Size:</span>
-                        <span>{selectedItem.stackSize} items</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Toughness (Armor):</span>
-                        <span style={{ color: '#88aaff', fontWeight: 'bold' }}>+{selectedItem.toughness}</span>
-                      </div>
-                      {selectedItem.actions && selectedItem.actions !== 'None' && (
-                        <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                          <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
-                          <div>{renderEffectBadges(selectedItem.actions)}</div>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+            {/* SHARED INSPECTOR PANEL */}
+            {renderItemInspector()}
           </div>
         )}
 
@@ -1156,90 +1132,8 @@ function App() {
               </div>
             </div>
 
-            {/* DETAIL DRAWER */}
-            {selectedItem && (
-              <div className="card" style={{ width: '380px', borderLeft: '2px solid var(--border-glass)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Item Inspector</span>
-                  <button onClick={() => setSelectedItem(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
-                </div>
-
-                {hideSpoilers && selectedItem.rarity === 'legendary' ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', border: '1px dashed #ff8000', borderRadius: '8px', background: 'rgba(255, 128, 0, 0.03)' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
-                    <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
-                      Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ width: '64px', height: '64px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '6px' }}>
-                        <img src={selectedItem.iconFilename ? `/game_icons/${selectedItem.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} alt="" />
-                      </div>
-                      <div>
-                        <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedItem.name}</h2>
-                        <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{selectedItem.id}</span>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
-                        <span>Tool</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
-                        <span>
-                          {selectedItem.unlockResearchList && selectedItem.unlockResearchList.length > 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                              {selectedItem.unlockResearchList.map((r, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <img 
-                                    src={`/game_icons/${r.iconFile}`} 
-                                    alt="" 
-                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
-                                    onError={(e) => { e.target.style.display = 'none'; }}
-                                  />
-                                  <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedItem.unlockResearch || 'None (Start)'}</span>
-                          )}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
-                        <span style={{ fontWeight: 600, color: getRarityColor(selectedItem.rarity) }}>
-                          {selectedItem.rarity.charAt(0).toUpperCase() + selectedItem.rarity.slice(1)}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Value:</span>
-                        <span style={{ color: 'var(--accent-cyan)' }}>{selectedItem.buyValue} Ren</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Stack Size:</span>
-                        <span>{selectedItem.stackSize} items</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Equip Slots:</span>
-                        <span>{selectedItem.slots}</span>
-                      </div>
-                      {selectedItem.actions && selectedItem.actions !== 'None' && (
-                        <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                          <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
-                          <div>{renderEffectBadges(selectedItem.actions)}</div>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+            {/* SHARED INSPECTOR PANEL */}
+            {renderItemInspector()}
           </div>
         )}
 
@@ -1360,96 +1254,8 @@ function App() {
               </div>
             </div>
 
-            {/* DETAIL DRAWER */}
-            {selectedItem && (
-              <div className="card" style={{ width: '380px', borderLeft: '2px solid var(--border-glass)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Item Inspector</span>
-                  <button onClick={() => setSelectedItem(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
-                </div>
-
-                {hideSpoilers && selectedItem.rarity === 'legendary' ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', border: '1px dashed #ff8000', borderRadius: '8px', background: 'rgba(255, 128, 0, 0.03)' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
-                    <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
-                      Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ width: '64px', height: '64px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '6px' }}>
-                        <img src={selectedItem.iconFilename ? `/game_icons/${selectedItem.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} alt="" />
-                      </div>
-                      <div>
-                        <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedItem.name}</h2>
-                        <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{selectedItem.id}</span>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
-                        <span>{selectedItem.type.replace('tag_item_type_', '')}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
-                        <span>
-                          {selectedItem.unlockResearchList && selectedItem.unlockResearchList.length > 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                              {selectedItem.unlockResearchList.map((r, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <img 
-                                    src={`/game_icons/${r.iconFile}`} 
-                                    alt="" 
-                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
-                                    onError={(e) => { e.target.style.display = 'none'; }}
-                                  />
-                                  <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedItem.unlockResearch || 'None (Start)'}</span>
-                          )}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
-                        <span style={{ fontWeight: 600, color: getRarityColor(selectedItem.rarity) }}>
-                          {selectedItem.rarity.charAt(0).toUpperCase() + selectedItem.rarity.slice(1)}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Value:</span>
-                        <span style={{ color: 'var(--accent-cyan)' }}>{selectedItem.buyValue} Ren</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Stack Size:</span>
-                        <span>{selectedItem.stackSize} items</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Equip Slots:</span>
-                        <span>{selectedItem.slots}</span>
-                      </div>
-                      {selectedItem.toughness > 0 && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                          <span style={{ color: 'var(--text-muted)' }}>Toughness (Armor):</span>
-                          <span style={{ color: '#88aaff', fontWeight: 'bold' }}>+{selectedItem.toughness}</span>
-                        </div>
-                      )}
-                      {selectedItem.actions && selectedItem.actions !== 'None' && (
-                        <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                          <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
-                          <div>{renderEffectBadges(selectedItem.actions)}</div>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+            {/* SHARED INSPECTOR PANEL */}
+            {renderItemInspector()}
           </div>
         )}
 
@@ -1563,90 +1369,8 @@ function App() {
               </div>
             </div>
 
-            {/* DETAIL DRAWER */}
-            {selectedItem && (
-              <div className="card" style={{ width: '380px', borderLeft: '2px solid var(--border-glass)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Item Inspector</span>
-                  <button onClick={() => setSelectedItem(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
-                </div>
-
-                {hideSpoilers && selectedItem.rarity === 'legendary' ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', border: '1px dashed #ff8000', borderRadius: '8px', background: 'rgba(255, 128, 0, 0.03)' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
-                    <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
-                      Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ width: '64px', height: '64px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '6px' }}>
-                        <img src={selectedItem.iconFilename ? `/game_icons/${selectedItem.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} alt="" />
-                      </div>
-                      <div>
-                        <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedItem.name}</h2>
-                        <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{selectedItem.id}</span>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
-                        <span>{selectedItem.type}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
-                        <span>
-                          {selectedItem.unlockResearchList && selectedItem.unlockResearchList.length > 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                              {selectedItem.unlockResearchList.map((r, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <img 
-                                    src={`/game_icons/${r.iconFile}`} 
-                                    alt="" 
-                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
-                                    onError={(e) => { e.target.style.display = 'none'; }}
-                                  />
-                                  <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedItem.unlockResearch || 'None (Start)'}</span>
-                          )}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
-                        <span style={{ fontWeight: 600, color: getRarityColor(selectedItem.rarity) }}>
-                          {selectedItem.rarity.charAt(0).toUpperCase() + selectedItem.rarity.slice(1)}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Value:</span>
-                        <span style={{ color: 'var(--accent-cyan)' }}>{selectedItem.buyValue} Ren</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Stack Size:</span>
-                        <span>{selectedItem.stackSize} items</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Decay Rule:</span>
-                        <span>{selectedItem.decayInfo}</span>
-                      </div>
-                      {selectedItem.actions && selectedItem.actions !== 'None' && (
-                        <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                          <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
-                          <div>{renderEffectBadges(selectedItem.actions)}</div>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+            {/* SHARED INSPECTOR PANEL */}
+            {renderItemInspector()}
           </div>
         )}
 
@@ -1750,92 +1474,8 @@ function App() {
               </div>
             </div>
 
-            {/* DETAIL DRAWER */}
-            {selectedItem && (
-              <div className="card" style={{ width: '380px', borderLeft: '2px solid var(--border-glass)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Item Inspector</span>
-                  <button onClick={() => setSelectedItem(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
-                </div>
-
-                {hideSpoilers && selectedItem.rarity === 'legendary' ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', border: '1px dashed #ff8000', borderRadius: '8px', background: 'rgba(255, 128, 0, 0.03)' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
-                    <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
-                      Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ width: '64px', height: '64px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '6px' }}>
-                        <img src={selectedItem.iconFilename ? `/game_icons/${selectedItem.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} alt="" />
-                      </div>
-                      <div>
-                        <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedItem.name}</h2>
-                        <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{selectedItem.id}</span>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
-                        <span>Potion</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
-                        <span>
-                          {selectedItem.unlockResearchList && selectedItem.unlockResearchList.length > 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                              {selectedItem.unlockResearchList.map((r, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <img 
-                                    src={`/game_icons/${r.iconFile}`} 
-                                    alt="" 
-                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
-                                    onError={(e) => { e.target.style.display = 'none'; }}
-                                  />
-                                  <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedItem.unlockResearch || 'None (Start)'}</span>
-                          )}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
-                        <span style={{ fontWeight: 600, color: getRarityColor(selectedItem.rarity) }}>
-                          {selectedItem.rarity.charAt(0).toUpperCase() + selectedItem.rarity.slice(1)}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Value:</span>
-                        <span style={{ color: 'var(--accent-cyan)' }}>{selectedItem.buyValue} Ren</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Stack Size:</span>
-                        <span>{selectedItem.stackSize} items</span>
-                      </div>
-                      {selectedItem.toughness > 0 && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                          <span style={{ color: 'var(--text-muted)' }}>Toughness:</span>
-                          <span style={{ color: '#88aaff', fontWeight: 'bold' }}>+{selectedItem.toughness}</span>
-                        </div>
-                      )}
-                      {selectedItem.actions && selectedItem.actions !== 'None' && (
-                        <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                          <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
-                          <div>{renderEffectBadges(selectedItem.actions)}</div>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+            {/* SHARED INSPECTOR PANEL */}
+            {renderItemInspector()}
           </div>
         )}
 
@@ -1953,90 +1593,8 @@ function App() {
               </div>
             </div>
 
-            {/* DETAIL DRAWER */}
-            {selectedItem && (
-              <div className="card" style={{ width: '380px', borderLeft: '2px solid var(--border-glass)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Item Inspector</span>
-                  <button onClick={() => setSelectedItem(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
-                </div>
-
-                {hideSpoilers && selectedItem.rarity === 'legendary' ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', border: '1px dashed #ff8000', borderRadius: '8px', background: 'rgba(255, 128, 0, 0.03)' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔒</div>
-                    <div style={{ fontWeight: 'bold', color: '#ff8000', fontSize: '0.9rem', marginBottom: '4px' }}>Legendary Spoiler Locked</div>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '0 20px', margin: 0 }}>
-                      Uncheck the "Blur Legendary Spoilers" switch in the top header to inspect parameters.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ width: '64px', height: '64px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '6px' }}>
-                        <img src={selectedItem.iconFilename ? `/game_icons/${selectedItem.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} alt="" />
-                      </div>
-                      <div>
-                        <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedItem.name}</h2>
-                        <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{selectedItem.id}</span>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
-                        <span>{selectedItem.type.replace('tag_item_type_', '')}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
-                        <span>
-                          {selectedItem.unlockResearchList && selectedItem.unlockResearchList.length > 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                              {selectedItem.unlockResearchList.map((r, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <img 
-                                    src={`/game_icons/${r.iconFile}`} 
-                                    alt="" 
-                                    style={{ width: '32px', height: '32px', imageRendering: 'pixelated', borderRadius: '4px' }}
-                                    onError={(e) => { e.target.style.display = 'none'; }}
-                                  />
-                                  <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{r.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span style={{ color: '#ffc233', fontWeight: 'bold' }}>{selectedItem.unlockResearch || 'None (Start)'}</span>
-                          )}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Rarity:</span>
-                        <span style={{ fontWeight: 600, color: getRarityColor(selectedItem.rarity) }}>
-                          {selectedItem.rarity.charAt(0).toUpperCase() + selectedItem.rarity.slice(1)}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Value:</span>
-                        <span style={{ color: 'var(--accent-cyan)' }}>{selectedItem.buyValue} Ren</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Stack Size:</span>
-                        <span>{selectedItem.stackSize} items</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Decay Rule:</span>
-                        <span>{selectedItem.decayInfo}</span>
-                      </div>
-                      {selectedItem.actions && selectedItem.actions !== 'None' && (
-                        <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                          <div style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Special Attributes:</div>
-                          <div>{renderEffectBadges(selectedItem.actions)}</div>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+            {/* SHARED INSPECTOR PANEL */}
+            {renderItemInspector()}
           </div>
         )}
 
