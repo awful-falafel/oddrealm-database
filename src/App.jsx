@@ -682,7 +682,7 @@ function App() {
             style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
             <img src="/game_icons/sp_blade_of_brian_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
-            <span>Weapons Database</span>
+            <span>Weapons</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'tools' ? 'active' : ''}`}
@@ -690,7 +690,7 @@ function App() {
             style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
             <img src="/game_icons/sp_iron_pickaxe_two_hand_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
-            <span>Tools Database</span>
+            <span>Tools</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'gear' ? 'active' : ''}`}
@@ -706,7 +706,7 @@ function App() {
             style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
             <img src="/game_icons/sp_apple_pie_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
-            <span>Meals Database</span>
+            <span>Meals</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'food' ? 'active' : ''}`}
@@ -714,7 +714,7 @@ function App() {
             style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
             <img src="/game_icons/sp_apple_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
-            <span>Food Database</span>
+            <span>Food</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'potions' ? 'active' : ''}`}
@@ -746,7 +746,7 @@ function App() {
             style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
             <img src="/game_icons/sp_iron_anvil_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
-            <span>Props Database</span>
+            <span>Props</span>
           </button>
         </div>
 
@@ -773,15 +773,15 @@ function App() {
         }}>
           <div style={{ color: 'var(--accent-cyan)', fontSize: '0.9rem', fontWeight: 600, fontFamily: 'var(--font-header)', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             {currentView === 'dashboard' && <><img src="/game_icons/sp_adepts_aeternum_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Dashboard</>}
-            {currentView === 'weapons' && <><img src="/game_icons/sp_blade_of_brian_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Weapons Database</>}
-            {currentView === 'tools' && <><img src="/game_icons/sp_iron_pickaxe_two_hand_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Tools Database</>}
+            {currentView === 'weapons' && <><img src="/game_icons/sp_blade_of_brian_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Weapons</>}
+            {currentView === 'tools' && <><img src="/game_icons/sp_iron_pickaxe_two_hand_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Tools</>}
             {currentView === 'gear' && <><img src="/game_icons/sp_bronze_breastplate_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Armor & Gear</>}
-            {currentView === 'meals' && <><img src="/game_icons/sp_apple_pie_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Meals Database</>}
-            {currentView === 'food' && <><img src="/game_icons/sp_apple_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Food Database</>}
+            {currentView === 'meals' && <><img src="/game_icons/sp_apple_pie_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Meals</>}
+            {currentView === 'food' && <><img src="/game_icons/sp_apple_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Food</>}
             {currentView === 'potions' && <><img src="/game_icons/sp_health_potion_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Potions & Elixirs</>}
             {currentView === 'resources' && <><img src="/game_icons/sp_iron_ingot_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Materials & Seeds</>}
             {currentView === 'blocks' && <><img src="/game_icons/sp_block_clay_brick_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Blocks</>}
-            {currentView === 'props' && <><img src="/game_icons/sp_iron_anvil_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Props Database</>}
+            {currentView === 'props' && <><img src="/game_icons/sp_iron_anvil_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Props</>}
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
