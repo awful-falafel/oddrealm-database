@@ -32,7 +32,7 @@ app.get('/api/game-data/glossary', (req, res) => {
 });
 
 // Fallback to serving the built index.html for standalone frontend routing
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => {
   const indexPath = path.join(__dirname, 'dist', 'index.html');
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
