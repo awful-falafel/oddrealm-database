@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-console.log('\x1b[35m[Odd Realm Modding Studio]\x1b[0m Starting backend and frontend servers...');
+console.log('\x1b[35m[Odd Glossary]\x1b[0m Starting backend and frontend servers...');
 
 // Spawn backend server
 const backend = spawn('node', ['server.js'], { cwd: __dirname, shell: true });
