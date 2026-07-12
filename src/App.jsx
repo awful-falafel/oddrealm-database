@@ -4,7 +4,7 @@ import prepackagedGlossary from './glossary_database.json';
 const API_BASE = 'http://localhost:5000/api';
 
 function App() {
-  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, weapons, tools, gear, meals, food, potions, resources, blocks, props
+  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, alcohol, gear, blocks, fruits, fungus, materials, meals, other, potions, props, seeds, tools, vegetables, weapons
   const [glossary, setGlossary] = useState(prepackagedGlossary);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -28,7 +28,6 @@ function App() {
   const [materialFilter, setMaterialFilter] = useState('all');
   const [slotFilter, setSlotFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
-  const [stationFilter, setStationFilter] = useState('all');
 
   // Sorting
   const [itemsSort, setItemsSort] = useState({ field: 'name', asc: true });
@@ -59,7 +58,6 @@ function App() {
     setMaterialFilter('all');
     setSlotFilter('all');
     setTypeFilter('all');
-    setStationFilter('all');
   };
 
   // Helper classification methods
@@ -193,12 +191,7 @@ function App() {
       const types = ['Pickaxe', 'Axe', 'Spoon', 'Chisel', 'Needle', 'Knife', 'Hammer', 'Saw', 'Trowel'];
       return types.filter(t => items.some(item => (item.name || '').toLowerCase().includes(t.toLowerCase())));
     }
-    if (viewName === 'food') {
-      const types = new Set();
-      items.forEach(item => { if (item.type) types.add(item.type); });
-      return Array.from(types);
-    }
-    if (viewName === 'resources') {
+    if (viewName === 'materials') {
       const types = new Set();
       items.forEach(item => { if (item.type) types.add(item.type.replace('tag_item_type_', '')); });
       return Array.from(types);
@@ -236,8 +229,8 @@ function App() {
       glossary.items.forEach(item => {
         const itemText = `${item.name} ${item.id} ${item.type} ${item.actions} ${item.slots} ${item.attacks} ${item.rarity} ${item.unlockResearch}`;
         if (testMatch(itemText)) {
-          let view = 'resources';
-          let label = 'Material';
+          let view = 'other';
+          let label = 'Other';
           
           if (isWeapon(item)) {
             view = 'weapons';
@@ -248,15 +241,30 @@ function App() {
           } else if (item.type === 'tool') {
             view = 'tools';
             label = 'Tool';
-          } else if (item.type === 'gear' || item.type === 'trinket' || isShield(item)) {
+          } else if (item.type === 'gear' || (item.type === 'trinket' && item.id !== 'item_ren')) {
             view = 'gear';
             label = 'Gear';
           } else if (item.type === 'meal') {
             view = 'meals';
             label = 'Meal';
-          } else if (foodTypes.includes(item.type)) {
-            view = 'food';
-            label = 'Food';
+          } else if (item.type === 'fruit') {
+            view = 'fruits';
+            label = 'Fruit';
+          } else if (item.type === 'vegetable') {
+            view = 'vegetables';
+            label = 'Vegetable';
+          } else if (item.type === 'fungus') {
+            view = 'fungus';
+            label = 'Fungus';
+          } else if (item.type === 'alcohol') {
+            view = 'alcohol';
+            label = 'Alcohol';
+          } else if (item.type === 'seed') {
+            view = 'seeds';
+            label = 'Seed';
+          } else if (resourceTypes.includes(item.type) && item.type !== 'seed' && item.type !== 'trinket' && item.id !== 'item_ren') {
+            view = 'materials';
+            label = 'Material';
           }
 
           results.push({
@@ -334,11 +342,30 @@ function App() {
     return glossary.items.filter(item => {
       if (viewName === 'weapons') return isWeapon(item);
       if (viewName === 'tools') return item.type === 'tool' && !isWeapon(item) && !isShield(item);
-      if (viewName === 'gear') return item.type === 'gear' || item.type === 'trinket' || isShield(item);
+      if (viewName === 'gear') return (item.type === 'gear' || item.type === 'trinket') && item.id !== 'item_ren' && !isWeapon(item) && !isShield(item);
       if (viewName === 'meals') return item.type === 'meal';
-      if (viewName === 'food') return foodTypes.includes(item.type) && item.type !== 'meal';
+      if (viewName === 'fruits') return item.type === 'fruit';
+      if (viewName === 'vegetables') return item.type === 'vegetable';
+      if (viewName === 'fungus') return item.type === 'fungus';
+      if (viewName === 'alcohol') return item.type === 'alcohol';
       if (viewName === 'potions') return item.type === 'potion';
-      if (viewName === 'resources') return resourceTypes.includes(item.type);
+      if (viewName === 'seeds') return item.type === 'seed';
+      if (viewName === 'materials') return resourceTypes.includes(item.type) && item.type !== 'seed' && item.type !== 'trinket' && item.id !== 'item_ren';
+      if (viewName === 'other') {
+        // Exclude everything that has a specific view
+        if (isWeapon(item)) return false;
+        if (item.type === 'tool') return false;
+        if ((item.type === 'gear' || item.type === 'trinket') && item.id !== 'item_ren') return false;
+        if (item.type === 'meal') return false;
+        if (item.type === 'fruit') return false;
+        if (item.type === 'vegetable') return false;
+        if (item.type === 'fungus') return false;
+        if (item.type === 'alcohol') return false;
+        if (item.type === 'potion') return false;
+        if (item.type === 'seed') return false;
+        if (resourceTypes.includes(item.type) && item.type !== 'seed' && item.type !== 'trinket' && item.id !== 'item_ren') return false;
+        return true;
+      }
       return false;
     });
   };
@@ -358,9 +385,7 @@ function App() {
 
       let matchesType = true;
       if (typeFilter !== 'all') {
-        if (viewName === 'food') {
-          matchesType = item.type === typeFilter;
-        } else if (viewName === 'resources') {
+        if (viewName === 'materials') {
           matchesType = item.type.replace('tag_item_type_', '') === typeFilter;
         } else {
           matchesType = (item.name || '').toLowerCase().includes(typeFilter.toLowerCase());
@@ -480,7 +505,7 @@ function App() {
     );
   };
 
-  // Reusable Item Inspector Component (renders all fields raw/un-formatted)
+  // Reusable Inspectors
   const renderItemInspector = () => {
     if (!selectedItem) return null;
     
@@ -530,7 +555,6 @@ function App() {
               </div>
             )}
 
-            {/* List all other fields raw and un-formatted */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {Object.entries(selectedItem).map(([key, value]) => {
                 if (key === 'unlockResearchList' || key === 'iconFilename') return null;
@@ -552,6 +576,70 @@ function App() {
             </div>
           </>
         )}
+      </div>
+    );
+  };
+
+  const renderBlockInspector = () => {
+    if (!selectedBlock) return null;
+    
+    return (
+      <div className="card" style={{ width: '380px', borderLeft: '2px solid var(--border-glass)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', background: 'var(--bg-secondary)', zIndex: 5 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>
+            {selectedBlock.id.startsWith('prop_') ? 'Prop Inspector' : 'Block Inspector'}
+          </span>
+          <button onClick={() => setSelectedBlock(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ width: '128px', height: '128px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '12px' }}>
+            <img src={selectedBlock.iconFilename ? `/game_icons/${selectedBlock.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%' }} alt="" />
+          </div>
+          <div>
+            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedBlock.name}</h2>
+            <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{selectedBlock.id}</span>
+          </div>
+        </div>
+
+        {selectedBlock.unlockResearchList && selectedBlock.unlockResearchList.length > 0 && (
+          <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '10px' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '6px', fontFamily: 'var(--font-mono)' }}>unlockResearchList</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {selectedBlock.unlockResearchList.map((r, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <img 
+                    src={`/game_icons/${r.iconFile}`} 
+                    alt="" 
+                    style={{ width: '64px', height: '64px', borderRadius: '4px' }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                  <span style={{ color: 'var(--tbl-highlight)', fontWeight: 'bold', fontSize: '0.85rem' }}>{r.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {Object.entries(selectedBlock).map(([key, value]) => {
+            if (key === 'unlockResearchList' || key === 'iconFilename') return null;
+
+            let displayVal = '';
+            if (typeof value === 'object' && value !== null) {
+              displayVal = JSON.stringify(value);
+            } else {
+              displayVal = String(value);
+            }
+
+            return (
+              <div key={key} style={{ display: 'flex', flexDirection: 'column', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px', gap: '2px' }}>
+                <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>{key}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--text-primary)', wordBreak: 'break-all' }}>{displayVal}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   };
@@ -676,21 +764,15 @@ function App() {
             <img src="/game_icons/sp_adepts_aeternum_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
             <span>Dashboard</span>
           </button>
+
+          {/* Alphabetical Left-Nav Sections */}
           <button 
-            className={`nav-item ${currentView === 'weapons' ? 'active' : ''}`}
-            onClick={() => resetFilters('weapons')}
+            className={`nav-item ${currentView === 'alcohol' ? 'active' : ''}`}
+            onClick={() => resetFilters('alcohol')}
             style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            <img src="/game_icons/sp_blade_of_brian_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
-            <span>Weapons</span>
-          </button>
-          <button 
-            className={`nav-item ${currentView === 'tools' ? 'active' : ''}`}
-            onClick={() => resetFilters('tools')}
-            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
-          >
-            <img src="/game_icons/sp_iron_pickaxe_two_hand_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
-            <span>Tools</span>
+            <img src="/game_icons/sp_blackberry_wine_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Alcohol</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'gear' ? 'active' : ''}`}
@@ -701,6 +783,38 @@ function App() {
             <span>Armor & Gear</span>
           </button>
           <button 
+            className={`nav-item ${currentView === 'blocks' ? 'active' : ''}`}
+            onClick={() => resetFilters('blocks')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
+            <img src="/game_icons/sp_block_clay_brick_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Blocks</span>
+          </button>
+          <button 
+            className={`nav-item ${currentView === 'fruits' ? 'active' : ''}`}
+            onClick={() => resetFilters('fruits')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
+            <img src="/game_icons/sp_apple_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Fruits</span>
+          </button>
+          <button 
+            className={`nav-item ${currentView === 'fungus' ? 'active' : ''}`}
+            onClick={() => resetFilters('fungus')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
+            <img src="/game_icons/sp_boletus_mushroom_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Fungus</span>
+          </button>
+          <button 
+            className={`nav-item ${currentView === 'materials' ? 'active' : ''}`}
+            onClick={() => resetFilters('materials')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
+            <img src="/game_icons/sp_iron_ingot_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Materials</span>
+          </button>
+          <button 
             className={`nav-item ${currentView === 'meals' ? 'active' : ''}`}
             onClick={() => resetFilters('meals')}
             style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
@@ -709,12 +823,12 @@ function App() {
             <span>Meals</span>
           </button>
           <button 
-            className={`nav-item ${currentView === 'food' ? 'active' : ''}`}
-            onClick={() => resetFilters('food')}
+            className={`nav-item ${currentView === 'other' ? 'active' : ''}`}
+            onClick={() => resetFilters('other')}
             style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            <img src="/game_icons/sp_apple_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
-            <span>Food</span>
+            <img src="/game_icons/sp_remains_rat_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Other</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'potions' ? 'active' : ''}`}
@@ -725,22 +839,6 @@ function App() {
             <span>Potions & Elixirs</span>
           </button>
           <button 
-            className={`nav-item ${currentView === 'resources' ? 'active' : ''}`}
-            onClick={() => resetFilters('resources')}
-            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
-          >
-            <img src="/game_icons/sp_iron_ingot_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
-            <span>Materials & Seeds</span>
-          </button>
-          <button 
-            className={`nav-item ${currentView === 'blocks' ? 'active' : ''}`}
-            onClick={() => resetFilters('blocks')}
-            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
-          >
-            <img src="/game_icons/sp_block_clay_brick_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
-            <span>Blocks</span>
-          </button>
-          <button 
             className={`nav-item ${currentView === 'props' ? 'active' : ''}`}
             onClick={() => resetFilters('props')}
             style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
@@ -748,10 +846,42 @@ function App() {
             <img src="/game_icons/sp_iron_anvil_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
             <span>Props</span>
           </button>
+          <button 
+            className={`nav-item ${currentView === 'seeds' ? 'active' : ''}`}
+            onClick={() => resetFilters('seeds')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
+            <img src="/game_icons/sp_plant_beetroot_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Seeds</span>
+          </button>
+          <button 
+            className={`nav-item ${currentView === 'tools' ? 'active' : ''}`}
+            onClick={() => resetFilters('tools')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
+            <img src="/game_icons/sp_iron_pickaxe_two_hand_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Tools</span>
+          </button>
+          <button 
+            className={`nav-item ${currentView === 'vegetables' ? 'active' : ''}`}
+            onClick={() => resetFilters('vegetables')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
+            <img src="/game_icons/sp_broccoli_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Vegetables</span>
+          </button>
+          <button 
+            className={`nav-item ${currentView === 'weapons' ? 'active' : ''}`}
+            onClick={() => resetFilters('weapons')}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
+            <img src="/game_icons/sp_blade_of_brian_icon.png" style={{ width: '24px', height: '24px' }} alt="" />
+            <span>Weapons</span>
+          </button>
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>Explorer Version: 3.0.0</div>
+          <div>Explorer Version: 3.1.0</div>
           <div>Data Source: prepackaged</div>
           <div>Mode: 100% Serverless Offline</div>
         </div>
@@ -773,15 +903,20 @@ function App() {
         }}>
           <div style={{ color: 'var(--accent-cyan)', fontSize: '0.9rem', fontWeight: 600, fontFamily: 'var(--font-header)', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             {currentView === 'dashboard' && <><img src="/game_icons/sp_adepts_aeternum_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Dashboard</>}
-            {currentView === 'weapons' && <><img src="/game_icons/sp_blade_of_brian_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Weapons</>}
-            {currentView === 'tools' && <><img src="/game_icons/sp_iron_pickaxe_two_hand_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Tools</>}
+            {currentView === 'alcohol' && <><img src="/game_icons/sp_blackberry_wine_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Alcohol</>}
             {currentView === 'gear' && <><img src="/game_icons/sp_bronze_breastplate_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Armor & Gear</>}
-            {currentView === 'meals' && <><img src="/game_icons/sp_apple_pie_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Meals</>}
-            {currentView === 'food' && <><img src="/game_icons/sp_apple_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Food</>}
-            {currentView === 'potions' && <><img src="/game_icons/sp_health_potion_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Potions & Elixirs</>}
-            {currentView === 'resources' && <><img src="/game_icons/sp_iron_ingot_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Materials & Seeds</>}
             {currentView === 'blocks' && <><img src="/game_icons/sp_block_clay_brick_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Blocks</>}
+            {currentView === 'fruits' && <><img src="/game_icons/sp_apple_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Fruits</>}
+            {currentView === 'fungus' && <><img src="/game_icons/sp_boletus_mushroom_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Fungus</>}
+            {currentView === 'materials' && <><img src="/game_icons/sp_iron_ingot_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Materials</>}
+            {currentView === 'meals' && <><img src="/game_icons/sp_apple_pie_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Meals</>}
+            {currentView === 'other' && <><img src="/game_icons/sp_remains_rat_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Other</>}
+            {currentView === 'potions' && <><img src="/game_icons/sp_health_potion_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Potions & Elixirs</>}
             {currentView === 'props' && <><img src="/game_icons/sp_iron_anvil_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Props</>}
+            {currentView === 'seeds' && <><img src="/game_icons/sp_plant_beetroot_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Seeds</>}
+            {currentView === 'tools' && <><img src="/game_icons/sp_iron_pickaxe_two_hand_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Tools</>}
+            {currentView === 'vegetables' && <><img src="/game_icons/sp_broccoli_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Vegetables</>}
+            {currentView === 'weapons' && <><img src="/game_icons/sp_blade_of_brian_icon.png" style={{ width: '24px', height: '24px' }} alt="" /> Weapons</>}
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -920,7 +1055,7 @@ function App() {
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Weapons</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Swords, bows, crossbows, practice daggers, and combat equipment.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.items?.filter(isWeapon).length || 0} Registered Weapons
+                  {glossary.items?.filter(isWeapon).length || 0} Registered
                 </div>
               </div>
 
@@ -931,7 +1066,7 @@ function App() {
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Tools</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Axes, pickaxes, hammers, chisels, and harvesting implements.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.items?.filter(i => i.type === 'tool' && !isWeapon(i) && !isShield(i)).length || 0} Registered Tools
+                  {glossary.items?.filter(i => i.type === 'tool' && !isWeapon(i) && !isShield(i)).length || 0} Registered
                 </div>
               </div>
 
@@ -942,7 +1077,7 @@ function App() {
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Armor & Gear</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Helmets, chestplates, boots, gauntlets, and defensive shields.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.items?.filter(i => i.type === 'gear' || i.type === 'trinket' || isShield(i)).length || 0} Armor & Shield pieces
+                  {glossary.items?.filter(i => (i.type === 'gear' || i.type === 'trinket') && i.id !== 'item_ren' && !isWeapon(i) && !isShield(i)).length || 0} Registered
                 </div>
               </div>
             </div>
@@ -953,44 +1088,79 @@ function App() {
                   <img src="/game_icons/sp_apple_pie_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
                 </div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Meals</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Prepared meals, baked pies, stews, cooked fish, and complex kitchen crafts.</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Prepared dishes, baked pies, stews, and finished kitchen crafts.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.items?.filter(i => i.type === 'meal').length || 0} Meals
+                  {glossary.items?.filter(i => i.type === 'meal').length || 0} Registered
                 </div>
               </div>
 
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('food')}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('fruits')}>
                 <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
                   <img src="/game_icons/sp_apple_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
                 </div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Raw Food & Drinks</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Raw meats, fresh fruits, vegetables, beverages, and alcohols.</p>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Fruits</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Apples, blueberries, and other gathered orchard harvests.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.items?.filter(i => foodTypes.includes(i.type) && i.type !== 'meal').length || 0} Food Ingredients
+                  {glossary.items?.filter(i => i.type === 'fruit').length || 0} Registered
                 </div>
               </div>
 
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('potions')}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('vegetables')}>
                 <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
-                  <img src="/game_icons/sp_health_potion_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                  <img src="/game_icons/sp_broccoli_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
                 </div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Potions & Elixirs</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Magical draughts, stat boosters, and healing potions.</p>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Vegetables</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Broccoli, beetroots, and raw garden vegetables.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.items?.filter(i => i.type === 'potion').length || 0} Potions
+                  {glossary.items?.filter(i => i.type === 'vegetable').length || 0} Registered
                 </div>
               </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '32px' }}>
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('resources')}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('fungus')}>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_boletus_mushroom_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Fungus</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Mushrooms, caps, and ground fungus ingredients.</p>
+                <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                  {glossary.items?.filter(i => i.type === 'fungus').length || 0} Registered
+                </div>
+              </div>
+
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('alcohol')}>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_blackberry_wine_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Alcohol</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Wine, cider, beer, and fermented cellar reserves.</p>
+                <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                  {glossary.items?.filter(i => i.type === 'alcohol').length || 0} Registered
+                </div>
+              </div>
+
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('seeds')}>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_plant_beetroot_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Seeds</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Agricultural seeds, grain seeds, and tree saplings.</p>
+                <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                  {glossary.items?.filter(i => i.type === 'seed').length || 0} Registered
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('materials')}>
                 <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
                   <img src="/game_icons/sp_iron_ingot_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
                 </div>
-                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Materials & Seeds</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Wood logs, metal ingots, ores, seeds, and raw ingredients.</p>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Materials</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Wood blocks, metal ingots, ores, stones, and refining materials.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.items?.filter(i => resourceTypes.includes(i.type)).length || 0} Materials
+                  {glossary.items?.filter(i => resourceTypes.includes(i.type) && i.type !== 'seed' && i.type !== 'trinket' && i.id !== 'item_ren').length || 0} Registered
                 </div>
               </div>
 
@@ -999,9 +1169,9 @@ function App() {
                   <img src="/game_icons/sp_block_clay_brick_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
                 </div>
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Blocks</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Terrain blocks, building walls, and structural environment tiles.</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Terrain blocks, building walls, and structural elements.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.blocks?.filter(b => !b.id.startsWith('prop_')).length || 0} Blocks
+                  {glossary.blocks?.filter(b => !b.id.startsWith('prop_')).length || 0} Registered
                 </div>
               </div>
 
@@ -1012,1182 +1182,274 @@ function App() {
                 <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Props</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Workbenches, furniture, stoves, decorative props, and crafting units.</p>
                 <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {glossary.blocks?.filter(b => b.id.startsWith('prop_')).length || 0} Props
+                  {glossary.blocks?.filter(b => b.id.startsWith('prop_')).length || 0} Registered
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px', marginBottom: '32px' }}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('potions')}>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_health_potion_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Potions & Elixirs</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Magical draughts, stat boosters, and healing potions.</p>
+                <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                  {glossary.items?.filter(i => i.type === 'potion').length || 0} Registered
+                </div>
+              </div>
+
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }} onClick={() => resetFilters('other')}>
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-primary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
+                  <img src="/game_icons/sp_remains_rat_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
+                </div>
+                <h3 className="card-title" style={{ color: 'var(--accent-cyan)', marginTop: '8px' }}>Other</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Ren, raw meats, raw fish, miscellaneous creature drops, and leftover items.</p>
+                <div style={{ marginTop: 'auto', fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                  {getFilteredItemsBase('other').length} Registered
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* VIEW: WEAPONS DATABASE */}
-        {currentView === 'weapons' && (
+        {/* Dynamic Category Views */}
+        {currentView !== 'dashboard' && (
           <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
+              
+              {/* HEADER DETAILS & FILTERS */}
               <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
-                    <img src="/game_icons/sp_blade_of_brian_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
-                  </div>
-                  <div>
-                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Weapons</h1>
-                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Weapons database. Displays physical damage ranges, attack type properties, and unlock nodes.</p>
-                  </div>
+                <div>
+                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)', textTransform: 'capitalize' }}>{currentView}</h1>
+                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>
+                    {currentView === 'alcohol' && 'Wines, ciders, beers, and cellared brews.'}
+                    {currentView === 'gear' && 'Helmets, chestplates, greaves, boots, gauntlets, and protective shields.'}
+                    {currentView === 'blocks' && 'Map blocks, walls, terrain floorings, and environment parameters.'}
+                    {currentView === 'fruits' && 'Apples, wild berries, and orchard foods.'}
+                    {currentView === 'fungus' && 'Boletus, blood crown mushrooms, and other fungi.'}
+                    {currentView === 'materials' && 'Wood, ingots, ores, gems, and refined building resources.'}
+                    {currentView === 'meals' && 'Prepared food, cooked stews, and finished kitchen crafts.'}
+                    {currentView === 'other' && 'Miscellaneous items, Ren, raw meats, fish, and drops.'}
+                    {currentView === 'potions' && 'Healing potions, draughts, and magical boosters.'}
+                    {currentView === 'props' && 'Settler furniture, anvils, workbenches, stoves, and decorations.'}
+                    {currentView === 'seeds' && 'Wheat seeds, saplings, crop seeds, and agricultural starters.'}
+                    {currentView === 'tools' && 'Spoons, pickaxes, axes, chisels, saws, and needles.'}
+                    {currentView === 'vegetables' && 'Broccoli, beetroots, and raw garden crops.'}
+                    {currentView === 'weapons' && 'Swords, bows, daggers, morningstars, and combat tools.'}
+                  </p>
                 </div>
                 
-                {/* Advanced Multi-Filters */}
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
-                    <option value="all">All Rarities</option>
-                    <option value="common">Common</option>
-                    <option value="uncommon">Uncommon</option>
-                    <option value="rare">Rare</option>
-                    <option value="epic">Epic</option>
-                    <option value="legendary">Legendary</option>
-                  </select>
+                {/* Filters */}
+                {(currentView !== 'blocks' && currentView !== 'props') && (
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
+                      <option value="all">All Rarities</option>
+                      <option value="common">Common</option>
+                      <option value="uncommon">Uncommon</option>
+                      <option value="rare">Rare</option>
+                      <option value="epic">Epic</option>
+                      <option value="legendary">Legendary</option>
+                    </select>
 
-                  <select className="filter-select" value={materialFilter} onChange={(e) => setMaterialFilter(e.target.value)}>
-                    <option value="all">All Materials</option>
-                    {getMaterialsList('weapons').map(m => <option key={m} value={m}>{m}</option>)}
-                  </select>
-
-                  <select className="filter-select" value={slotFilter} onChange={(e) => setSlotFilter(e.target.value)}>
-                    <option value="all">All Slots</option>
-                    {getSlotsList('weapons').map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-
-                  <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-                    <option value="all">All Weapon Types</option>
-                    {getTypesList('weapons').map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Icon</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity {itemsSort.field === 'rarity' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range {itemsSort.field === 'maxDamage' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness {itemsSort.field === 'toughness' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('attacks')}>Attack Type {itemsSort.field === 'attacks' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('actions')}>Effects / Attributes {itemsSort.field === 'actions' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value {itemsSort.field === 'buyValue' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getSortedItems('weapons').map((item, index) => {
-                      const isBlurred = hideSpoilers && isSpoiler(item);
-                      return (
-                        <tr 
-                          key={item.id} 
-                          id={`row-${item.id}`}
-                          onClick={() => setSelectedItem(item)}
-                          style={{ 
-                            borderBottom: '1px solid var(--border-glass)',
-                            backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
-                            cursor: 'pointer'
-                          }}
-                          className={`${highlightId === item.id ? 'flash-highlight' : ''} ${isBlurred ? 'spoiler-blurred-container' : ''}`}
-                        >
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <img 
-                              src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
-                              alt=""
-                              style={{ width: '48px', height: '48px' }}
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <div style={{ fontWeight: 600 }}>{item.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.id}</div>
-                          </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
-                          </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-damage)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
-                          </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.toughness > 0 ? `+${item.toughness}` : '-'}
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 600 }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {getAttackTypeLabel(item.attacks)}
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                {item.unlockResearchList.map((r, i) => (
-                                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <img 
-                                      src={`/game_icons/${r.iconFile}`} 
-                                      alt="" 
-                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
-                                      onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                    <span>{r.name}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <span>{formatUnlockText(item.unlockResearch)}</span>
-                            )}
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
-                        </tr>
-                      );
-                    })}
-                    {getSortedItems('weapons').length === 0 && (
-                      <tr>
-                        <td colSpan="9" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
-                      </tr>
+                    {(currentView === 'weapons' || currentView === 'tools' || currentView === 'gear') && (
+                      <select className="filter-select" value={materialFilter} onChange={(e) => setMaterialFilter(e.target.value)}>
+                        <option value="all">All Materials</option>
+                        {getMaterialsList(currentView).map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
                     )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
 
-            {/* SHARED INSPECTOR PANEL */}
-            {renderItemInspector()}
-          </div>
-        )}
-
-        {/* VIEW: TOOLS DATABASE */}
-        {currentView === 'tools' && (
-          <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
-              <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
-                    <img src="/game_icons/sp_iron_pickaxe_two_hand_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
-                  </div>
-                  <div>
-                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Tools</h1>
-                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Spoons, pickaxes, axes, needles, chisels, and harvesting implements.</p>
-                  </div>
-                </div>
-                
-                {/* Advanced Multi-Filters */}
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
-                    <option value="all">All Rarities</option>
-                    <option value="common">Common</option>
-                    <option value="uncommon">Uncommon</option>
-                    <option value="rare">Rare</option>
-                  </select>
-
-                  <select className="filter-select" value={materialFilter} onChange={(e) => setMaterialFilter(e.target.value)}>
-                    <option value="all">All Materials</option>
-                    {getMaterialsList('tools').map(m => <option key={m} value={m}>{m}</option>)}
-                  </select>
-
-                  <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-                    <option value="all">All Tool Types</option>
-                    {getTypesList('tools').map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Icon</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity {itemsSort.field === 'rarity' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range {itemsSort.field === 'maxDamage' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness {itemsSort.field === 'toughness' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('actions')}>Effects / Attributes {itemsSort.field === 'actions' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value {itemsSort.field === 'buyValue' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getSortedItems('tools').map((item, index) => {
-                      const isBlurred = hideSpoilers && isSpoiler(item);
-                      return (
-                        <tr 
-                          key={item.id} 
-                          id={`row-${item.id}`}
-                          onClick={() => setSelectedItem(item)}
-                          style={{ 
-                            borderBottom: '1px solid var(--border-glass)',
-                            backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
-                            cursor: 'pointer'
-                          }}
-                          className={`${highlightId === item.id ? 'flash-highlight' : ''} ${isBlurred ? 'spoiler-blurred-container' : ''}`}
-                        >
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <img 
-                              src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
-                              alt=""
-                              style={{ width: '48px', height: '48px' }}
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <div style={{ fontWeight: 600 }}>{item.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.id}</div>
-                          </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
-                          </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-damage)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
-                          </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.toughness > 0 ? `+${item.toughness}` : '-'}
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                {item.unlockResearchList.map((r, i) => (
-                                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <img 
-                                      src={`/game_icons/${r.iconFile}`} 
-                                      alt="" 
-                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
-                                      onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                    <span>{r.name}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <span>{formatUnlockText(item.unlockResearch)}</span>
-                            )}
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
-                        </tr>
-                      );
-                    })}
-                    {getSortedItems('tools').length === 0 && (
-                      <tr>
-                        <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
-                      </tr>
+                    {currentView === 'gear' && (
+                      <select className="filter-select" value={slotFilter} onChange={(e) => setSlotFilter(e.target.value)}>
+                        <option value="all">All Slots</option>
+                        {getSlotsList(currentView).map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
                     )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
 
-            {/* SHARED INSPECTOR PANEL */}
-            {renderItemInspector()}
-          </div>
-        )}
-
-        {/* VIEW: GEAR DATABASE */}
-        {currentView === 'gear' && (
-          <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
-              <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
-                    <img src="/game_icons/sp_bronze_breastplate_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
-                  </div>
-                  <div>
-                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Armor & Gear</h1>
-                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Helmets, chestplates, greaves, boots, gauntlets, shields, and rings.</p>
-                  </div>
-                </div>
-                
-                {/* Advanced Multi-Filters */}
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
-                    <option value="all">All Rarities</option>
-                    <option value="common">Common</option>
-                    <option value="uncommon">Uncommon</option>
-                    <option value="rare">Rare</option>
-                    <option value="epic">Epic</option>
-                    <option value="legendary">Legendary</option>
-                  </select>
-
-                  <select className="filter-select" value={materialFilter} onChange={(e) => setMaterialFilter(e.target.value)}>
-                    <option value="all">All Materials</option>
-                    {getMaterialsList('gear').map(m => <option key={m} value={m}>{m}</option>)}
-                  </select>
-
-                  <select className="filter-select" value={slotFilter} onChange={(e) => setSlotFilter(e.target.value)}>
-                    <option value="all">All Slots</option>
-                    {getSlotsList('gear').map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Icon</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity {itemsSort.field === 'rarity' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('slots')}>Equip Slot {itemsSort.field === 'slots' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range {itemsSort.field === 'maxDamage' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness {itemsSort.field === 'toughness' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('actions')}>Effects / Attributes {itemsSort.field === 'actions' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value {itemsSort.field === 'buyValue' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getSortedItems('gear').map((item, index) => {
-                      const isBlurred = hideSpoilers && isSpoiler(item);
-                      return (
-                        <tr 
-                          key={item.id} 
-                          id={`row-${item.id}`}
-                          onClick={() => setSelectedItem(item)}
-                          style={{ 
-                            borderBottom: '1px solid var(--border-glass)',
-                            backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
-                            cursor: 'pointer'
-                          }}
-                          className={`${highlightId === item.id ? 'flash-highlight' : ''} ${isBlurred ? 'spoiler-blurred-container' : ''}`}
-                        >
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <img 
-                              src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
-                              alt=""
-                              style={{ width: '48px', height: '48px' }}
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <div style={{ fontWeight: 600 }}>{item.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.id}</div>
-                          </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.slots}</td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-damage)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
-                          </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.toughness > 0 ? `+${item.toughness}` : '-'}</td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                {item.unlockResearchList.map((r, i) => (
-                                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <img 
-                                      src={`/game_icons/${r.iconFile}`} 
-                                      alt="" 
-                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
-                                      onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                    <span>{r.name}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <span>{formatUnlockText(item.unlockResearch)}</span>
-                            )}
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
-                        </tr>
-                      );
-                    })}
-                    {getSortedItems('gear').length === 0 && (
-                      <tr>
-                        <td colSpan="9" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
-                      </tr>
+                    {currentView === 'materials' && (
+                      <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                        <option value="all">All Types</option>
+                        {getTypesList('materials').map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
                     )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* SHARED INSPECTOR PANEL */}
-            {renderItemInspector()}
-          </div>
-        )}
-
-        {/* VIEW: MEALS DATABASE */}
-        {currentView === 'meals' && (
-          <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
-              <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
-                    <img src="/game_icons/sp_apple_pie_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
                   </div>
-                  <div>
-                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Meals Database</h1>
-                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Prepared meals, baked desserts, cooked stews, and finished kitchen products.</p>
-                  </div>
-                </div>
-                
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
-                    <option value="all">All Rarities</option>
-                    <option value="common">Common</option>
-                    <option value="uncommon">Uncommon</option>
-                    <option value="rare">Rare</option>
-                  </select>
-                </div>
+                )}
               </div>
 
+              {/* TABLE CONTAINER */}
               <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Icon</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('type')}>Type {itemsSort.field === 'type' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity {itemsSort.field === 'rarity' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('decayInfo')}>Decay Rule {itemsSort.field === 'decayInfo' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness {itemsSort.field === 'toughness' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('actions')}>Effects / Attributes {itemsSort.field === 'actions' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value {itemsSort.field === 'buyValue' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getSortedItems('meals').map((item, index) => {
-                      const isBlurred = hideSpoilers && isSpoiler(item);
-                      return (
-                        <tr 
-                          key={item.id} 
-                          id={`row-${item.id}`}
-                          onClick={() => setSelectedItem(item)}
-                          style={{ 
-                            borderBottom: '1px solid var(--border-glass)',
-                            backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
-                            cursor: 'pointer'
-                          }}
-                          className={`${highlightId === item.id ? 'flash-highlight' : ''} ${isBlurred ? 'spoiler-blurred-container' : ''}`}
-                        >
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <img 
-                              src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
-                              alt=""
-                              style={{ width: '48px', height: '48px' }}
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <div style={{ fontWeight: 600 }}>{item.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.id}</div>
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--text-secondary)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.type}</td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--text-muted)', fontSize: '0.8rem' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.decayInfo !== 'None' ? item.decayInfo : '-'}</td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.toughness > 0 ? `+${item.toughness}` : '-'}
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                {item.unlockResearchList.map((r, i) => (
-                                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <img 
-                                      src={`/game_icons/${r.iconFile}`} 
-                                      alt="" 
-                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
-                                      onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                    <span>{r.name}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <span>{formatUnlockText(item.unlockResearch)}</span>
-                            )}
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
-                        </tr>
-                      );
-                    })}
-                    {getSortedItems('meals').length === 0 && (
-                      <tr>
-                        <td colSpan="9" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
+                {(currentView !== 'blocks' && currentView !== 'props') ? (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Icon</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('type')}>Classification {itemsSort.field === 'type' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity {itemsSort.field === 'rarity' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage {itemsSort.field === 'maxDamage' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness {itemsSort.field === 'toughness' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('actions')}>Effects {itemsSort.field === 'actions' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value {itemsSort.field === 'buyValue' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* SHARED INSPECTOR PANEL */}
-            {renderItemInspector()}
-          </div>
-        )}
-
-        {/* VIEW: FOOD DATABASE */}
-        {currentView === 'food' && (
-          <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
-              <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
-                    <img src="/game_icons/sp_apple_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
-                  </div>
-                  <div>
-                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Food Database</h1>
-                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Raw agricultural crops, fruits, vegetables, meats, beverages, and alcohols.</p>
-                  </div>
-                </div>
-                
-                {/* Advanced Multi-Filters */}
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
-                    <option value="all">All Rarities</option>
-                    <option value="common">Common</option>
-                    <option value="uncommon">Uncommon</option>
-                    <option value="rare">Rare</option>
-                  </select>
-
-                  <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-                    <option value="all">All Food Types</option>
-                    {getTypesList('food').map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Icon</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('type')}>Type {itemsSort.field === 'type' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity {itemsSort.field === 'rarity' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('decayInfo')}>Decay Rule {itemsSort.field === 'decayInfo' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness {itemsSort.field === 'toughness' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('actions')}>Effects / Attributes {itemsSort.field === 'actions' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value {itemsSort.field === 'buyValue' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getSortedItems('food').map((item, index) => {
-                      const isBlurred = hideSpoilers && isSpoiler(item);
-                      return (
-                        <tr 
-                          key={item.id} 
-                          id={`row-${item.id}`}
-                          onClick={() => setSelectedItem(item)}
-                          style={{ 
-                            borderBottom: '1px solid var(--border-glass)',
-                            backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
-                            cursor: 'pointer'
-                          }}
-                          className={`${highlightId === item.id ? 'flash-highlight' : ''} ${isBlurred ? 'spoiler-blurred-container' : ''}`}
-                        >
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <img 
-                              src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
-                              alt=""
-                              style={{ width: '48px', height: '48px' }}
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <div style={{ fontWeight: 600 }}>{item.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.id}</div>
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--text-secondary)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.type}</td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--text-muted)', fontSize: '0.8rem' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.decayInfo !== 'None' ? item.decayInfo : '-'}</td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.toughness > 0 ? `+${item.toughness}` : '-'}
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                {item.unlockResearchList.map((r, i) => (
-                                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <img 
-                                      src={`/game_icons/${r.iconFile}`} 
-                                      alt="" 
-                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
-                                      onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                    <span>{r.name}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <span>{formatUnlockText(item.unlockResearch)}</span>
-                            )}
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
-                        </tr>
-                      );
-                    })}
-                    {getSortedItems('food').length === 0 && (
-                      <tr>
-                        <td colSpan="9" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* SHARED INSPECTOR PANEL */}
-            {renderItemInspector()}
-          </div>
-        )}
-
-        {/* VIEW: POTIONS DATABASE */}
-        {currentView === 'potions' && (
-          <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
-              <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
-                    <img src="/game_icons/sp_health_potion_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
-                  </div>
-                  <div>
-                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Potions & Elixirs</h1>
-                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Magical booster elixirs, heals, and structural stat enhancers.</p>
-                  </div>
-                </div>
-                
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
-                    <option value="all">All Rarities</option>
-                    <option value="common">Common</option>
-                    <option value="uncommon">Uncommon</option>
-                    <option value="rare">Rare</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Icon</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity {itemsSort.field === 'rarity' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness {itemsSort.field === 'toughness' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('actions')}>Effects / Attributes {itemsSort.field === 'actions' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value {itemsSort.field === 'buyValue' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getSortedItems('potions').map((item, index) => {
-                      const isBlurred = hideSpoilers && isSpoiler(item);
-                      return (
-                        <tr 
-                          key={item.id} 
-                          id={`row-${item.id}`}
-                          onClick={() => setSelectedItem(item)}
-                          style={{ 
-                            borderBottom: '1px solid var(--border-glass)',
-                            backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
-                            cursor: 'pointer'
-                          }}
-                          className={`${highlightId === item.id ? 'flash-highlight' : ''} ${isBlurred ? 'spoiler-blurred-container' : ''}`}
-                        >
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <img 
-                              src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
-                              alt=""
-                              style={{ width: '48px', height: '48px' }}
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <div style={{ fontWeight: 600 }}>{item.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.id}</div>
-                          </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
-                          </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.toughness > 0 ? `+${item.toughness}` : '-'}
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                {item.unlockResearchList.map((r, i) => (
-                                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <img 
-                                      src={`/game_icons/${r.iconFile}`} 
-                                      alt="" 
-                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
-                                      onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                    <span>{r.name}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <span>{formatUnlockText(item.unlockResearch)}</span>
-                            )}
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
-                        </tr>
-                      );
-                    })}
-                    {getSortedItems('potions').length === 0 && (
-                      <tr>
-                        <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* SHARED INSPECTOR PANEL */}
-            {renderItemInspector()}
-          </div>
-        )}
-
-        {/* VIEW: RESOURCES DATABASE */}
-        {currentView === 'resources' && (
-          <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
-              <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
-                    <img src="/game_icons/sp_iron_ingot_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
-                  </div>
-                  <div>
-                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Materials & Seeds</h1>
-                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Wood, ingots, raw ores, agricultural seeds, refined building materials, and drops.</p>
-                  </div>
-                </div>
-                
-                {/* Advanced Multi-Filters */}
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
-                    <option value="all">All Rarities</option>
-                    <option value="common">Common</option>
-                    <option value="uncommon">Uncommon</option>
-                    <option value="rare">Rare</option>
-                  </select>
-
-                  <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-                    <option value="all">All Material Types</option>
-                    {getTypesList('resources').map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Icon</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('name')}>Name {itemsSort.field === 'name' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('type')}>Classification {itemsSort.field === 'type' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('rarity')}>Rarity {itemsSort.field === 'rarity' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('stackSize')}>Stack Size {itemsSort.field === 'stackSize' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('maxDamage')}>Damage Range {itemsSort.field === 'maxDamage' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('toughness')}>Toughness {itemsSort.field === 'toughness' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('actions')}>Effects / Attributes {itemsSort.field === 'actions' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('unlockResearch')}>Unlocked By {itemsSort.field === 'unlockResearch' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortItems('buyValue')}>Value {itemsSort.field === 'buyValue' ? (itemsSort.asc ? '▲' : '▼') : ''}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getSortedItems('resources').map((item, index) => {
-                      const isBlurred = hideSpoilers && isSpoiler(item);
-                      return (
-                        <tr 
-                          key={item.id} 
-                          id={`row-${item.id}`}
-                          onClick={() => setSelectedItem(item)}
-                          style={{ 
-                            borderBottom: '1px solid var(--border-glass)',
-                            backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
-                            cursor: 'pointer'
-                          }}
-                          className={`${highlightId === item.id ? 'flash-highlight' : ''} ${isBlurred ? 'spoiler-blurred-container' : ''}`}
-                        >
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <img 
-                              src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
-                              alt=""
-                              style={{ width: '48px', height: '48px' }}
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            <div style={{ fontWeight: 600 }}>{item.name}</div>
-                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.id}</div>
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--text-secondary)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.type.replace('tag_item_type_', '')}</td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.stackSize} items</td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-damage)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
-                          </td>
-                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.toughness > 0 ? `+${item.toughness}` : '-'}
-                          </td>
-                          <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
-                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                            {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                {item.unlockResearchList.map((r, i) => (
-                                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <img 
-                                      src={`/game_icons/${r.iconFile}`} 
-                                      alt="" 
-                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
-                                      onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                    <span>{r.name}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <span>{formatUnlockText(item.unlockResearch)}</span>
-                            )}
-                          </td>
-                          <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
-                        </tr>
-                      );
-                    })}
-                    {getSortedItems('resources').length === 0 && (
-                      <tr>
-                        <td colSpan="10" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items match your filters.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* SHARED INSPECTOR PANEL */}
-            {renderItemInspector()}
-          </div>
-        )}
-
-        {/* VIEW: BLOCKS */}
-        {currentView === 'blocks' && (
-          <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
-              <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
-                    <img src="/game_icons/sp_block_clay_brick_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
-                  </div>
-                  <div>
-                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Blocks</h1>
-                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Reference base game room quality, pathing movement costs, and research locks for environmental terrain blocks.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('name')}>Icon</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('name')}>Name {blocksSort.field === 'name' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('unlockResearch')}>Unlocked By {blocksSort.field === 'unlockResearch' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('roomQuality')}>Room Quality {blocksSort.field === 'roomQuality' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('toughness')}>Toughness {blocksSort.field === 'toughness' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('cost')}>Path Cost {blocksSort.field === 'cost' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getSortedBlocks('blocks').map((block, index) => (
-                      <tr 
-                        key={block.id} 
-                        id={`row-${block.id}`}
-                        onClick={() => setSelectedBlock(block)}
-                        style={{ 
-                          borderBottom: '1px solid var(--border-glass)',
-                          backgroundColor: selectedBlock?.id === block.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
-                          cursor: 'pointer'
-                        }}
-                        className={highlightId === block.id ? 'flash-highlight' : ''}
-                      >
-                        <td style={{ padding: '8px' }}>
-                          <img 
-                            src={block.iconFilename ? `/game_icons/${block.iconFilename}` : `/game_icons/default.png`} 
-                            alt=""
-                            style={{ width: '48px', height: '48px' }}
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                          />
-                        </td>
-                        <td style={{ padding: '8px' }}>
-                          <div style={{ fontWeight: 600 }}>{block.name}</div>
-                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{block.id}</div>
-                        </td>
-                        <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }}>
-                          {block.unlockResearchList && block.unlockResearchList.length > 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                              {block.unlockResearchList.map((r, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <img 
-                                    src={`/game_icons/${r.iconFile}`} 
-                                    alt="" 
-                                    style={{ width: '64px', height: '64px', borderRadius: '4px' }}
-                                    onError={(e) => { e.target.style.display = 'none'; }}
-                                  />
-                                  <span>{r.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span>{formatUnlockText(block.unlockResearch)}</span>
-                          )}
-                        </td>
-                        <td style={{ padding: '8px', fontWeight: 600, color: 'var(--accent-cyan)' }}>+{block.roomQuality}</td>
-                        <td style={{ padding: '8px', color: '#ff8888' }}>{block.toughness || '-'}</td>
-                        <td style={{ padding: '8px' }}>{block.cost} pts</td>
-                      </tr>
-                    ))}
-                    {getSortedBlocks('blocks').length === 0 && (
-                      <tr>
-                        <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No blocks match your filters.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* BLOCK DETAIL DRAWER */}
-            {selectedBlock && (
-              <div className="card" style={{ width: '380px', borderLeft: '2px solid var(--border-glass)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Block Inspector</span>
-                  <button onClick={() => setSelectedBlock(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ width: '128px', height: '128px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '12px' }}>
-                    <img src={selectedBlock.iconFilename ? `/game_icons/${selectedBlock.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%' }} alt="" />
-                  </div>
-                  <div>
-                    <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedBlock.name}</h2>
-                    <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{selectedBlock.id}</span>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
-                    <span>{selectedBlock.isStation ? 'Crafting / Functional Prop' : 'Terrain Block / Wall'}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
-                    <span>
-                      {selectedBlock.unlockResearchList && selectedBlock.unlockResearchList.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                          {selectedBlock.unlockResearchList.map((r, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    </thead>
+                    <tbody>
+                      {getSortedItems(currentView).map((item, index) => {
+                        const isBlurred = hideSpoilers && isSpoiler(item);
+                        return (
+                          <tr 
+                            key={item.id} 
+                            id={`row-${item.id}`}
+                            onClick={() => setSelectedItem(item)}
+                            style={{ 
+                              borderBottom: '1px solid var(--border-glass)',
+                              backgroundColor: selectedItem?.id === item.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
+                              cursor: 'pointer'
+                            }}
+                            className={`${highlightId === item.id ? 'flash-highlight' : ''} ${isBlurred ? 'spoiler-blurred-container' : ''}`}
+                          >
+                            <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                               <img 
-                                src={`/game_icons/${r.iconFile}`} 
-                                alt="" 
-                                style={{ width: '64px', height: '64px', borderRadius: '4px' }}
+                                src={item.iconFilename ? `/game_icons/${item.iconFilename}` : `/game_icons/default.png`} 
+                                alt=""
+                                style={{ width: '48px', height: '48px' }}
                                 onError={(e) => { e.target.style.display = 'none'; }}
                               />
-                              <span style={{ color: 'var(--tbl-highlight)', fontWeight: 'bold' }}>{r.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <span style={{ color: 'var(--tbl-highlight)', fontWeight: 'bold' }}>{formatUnlockText(selectedBlock.unlockResearch)}</span>
-                      )}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Room Quality Contribution:</span>
-                    <span style={{ color: 'var(--accent-cyan)', fontWeight: 'bold' }}>+{selectedBlock.roomQuality} points</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Toughness (Durability):</span>
-                    <span>{selectedBlock.toughness || '0'} pts</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Movement Path Cost:</span>
-                    <span>{selectedBlock.cost} cost</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Atlas Coord (Texture):</span>
-                    <span style={{ fontFamily: 'var(--font-mono)' }}>({selectedBlock.textureX}, {selectedBlock.textureY})</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* VIEW: PROPS */}
-        {currentView === 'props' && (
-          <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
-              <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '48px', height: '48px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', padding: '4px' }}>
-                    <img src="/game_icons/sp_iron_anvil_icon.png" style={{ width: '100%', height: '100%' }} alt="" />
-                  </div>
-                  <div>
-                    <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>Props</h1>
-                    <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>Anvils, stoves, furniture, and functional workstations placed in rooms.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('name')}>Icon</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('name')}>Name {blocksSort.field === 'name' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('unlockResearch')}>Unlocked By {blocksSort.field === 'unlockResearch' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('roomQuality')}>Room Quality {blocksSort.field === 'roomQuality' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('toughness')}>Toughness {blocksSort.field === 'toughness' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('cost')}>Path Cost {blocksSort.field === 'cost' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
-                      <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('isStation')}>Is Station {blocksSort.field === 'isStation' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getSortedBlocks('props').map((block, index) => (
-                      <tr 
-                        key={block.id} 
-                        id={`row-${block.id}`}
-                        onClick={() => setSelectedBlock(block)}
-                        style={{ 
-                          borderBottom: '1px solid var(--border-glass)',
-                          backgroundColor: selectedBlock?.id === block.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
-                          cursor: 'pointer'
-                        }}
-                        className={highlightId === block.id ? 'flash-highlight' : ''}
-                      >
-                        <td style={{ padding: '8px' }}>
-                          <img 
-                            src={block.iconFilename ? `/game_icons/${block.iconFilename}` : `/game_icons/default.png`} 
-                            alt=""
-                            style={{ width: '48px', height: '48px' }}
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                          />
-                        </td>
-                        <td style={{ padding: '8px' }}>
-                          <div style={{ fontWeight: 600 }}>{block.name}</div>
-                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{block.id}</div>
-                        </td>
-                        <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }}>
-                          {block.unlockResearchList && block.unlockResearchList.length > 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                              {block.unlockResearchList.map((r, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <img 
-                                    src={`/game_icons/${r.iconFile}`} 
-                                    alt="" 
-                                    style={{ width: '64px', height: '64px', borderRadius: '4px' }}
-                                    onError={(e) => { e.target.style.display = 'none'; }}
-                                  />
-                                  <span>{r.name}</span>
+                            </td>
+                            <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                              <div style={{ fontWeight: 600 }}>{item.name}</div>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.id}</div>
+                            </td>
+                            <td style={{ padding: '8px', color: 'var(--text-secondary)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                              {item.type.replace('tag_item_type_', '')}
+                            </td>
+                            <td style={{ padding: '8px', fontWeight: 600, color: getRarityColor(item.rarity) }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                              {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
+                            </td>
+                            <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-damage)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                              {item.maxDamage > 0 ? `${item.minDamage}-${item.maxDamage}` : '-'}
+                            </td>
+                            <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                              {item.toughness > 0 ? `+${item.toughness}` : '-'}
+                            </td>
+                            <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
+                            <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                              {item.unlockResearchList && item.unlockResearchList.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                  {item.unlockResearchList.map((r, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <img 
+                                        src={`/game_icons/${r.iconFile}`} 
+                                        alt="" 
+                                        style={{ width: '64px', height: '64px', borderRadius: '4px' }}
+                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                      />
+                                      <span>{r.name}</span>
+                                    </div>
+                                  ))}
                                 </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span>{formatUnlockText(block.unlockResearch)}</span>
-                          )}
-                        </td>
-                        <td style={{ padding: '8px', fontWeight: 600, color: 'var(--accent-cyan)' }}>+{block.roomQuality}</td>
-                        <td style={{ padding: '8px', color: '#ff8888' }}>{block.toughness || '-'}</td>
-                        <td style={{ padding: '8px' }}>{block.cost} pts</td>
-                        <td style={{ padding: '8px' }}>
-                          {block.isStation ? (
-                            <span style={{ color: '#88ffaa', fontWeight: 'bold' }}>Yes</span>
-                          ) : (
-                            <span style={{ color: 'var(--text-muted)' }}>No</span>
-                          )}
-                        </td>
+                              ) : (
+                                <span>{formatUnlockText(item.unlockResearch)}</span>
+                              )}
+                            </td>
+                            <td style={{ padding: '8px', color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{item.buyValue} Ren</td>
+                          </tr>
+                        );
+                      })}
+                      {getSortedItems(currentView).length === 0 && (
+                        <tr>
+                          <td colSpan="9" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No items found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                ) : (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--border-glass)', color: 'var(--accent-cyan)', backgroundColor: theme === 'light' ? 'var(--bg-tertiary)' : '#1a140f', position: 'sticky', top: 0, zIndex: 1 }}>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('name')}>Icon</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('name')}>Name {blocksSort.field === 'name' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('unlockResearch')}>Unlocked By {blocksSort.field === 'unlockResearch' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('roomQuality')}>Room Quality {blocksSort.field === 'roomQuality' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('toughness')}>Toughness {blocksSort.field === 'toughness' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
+                        <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('cost')}>Path Cost {blocksSort.field === 'cost' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
+                        {currentView === 'props' && (
+                          <th style={{ padding: '10px 8px', cursor: 'pointer' }} onClick={() => handleSortBlocks('isStation')}>Is Station {blocksSort.field === 'isStation' ? (blocksSort.asc ? '▲' : '▼') : ''}</th>
+                        )}
                       </tr>
-                    ))}
-                    {getSortedBlocks('props').length === 0 && (
-                      <tr>
-                        <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No props match your filters.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {getSortedBlocks(currentView).map((block, index) => (
+                        <tr 
+                          key={block.id} 
+                          id={`row-${block.id}`}
+                          onClick={() => setSelectedBlock(block)}
+                          style={{ 
+                            borderBottom: '1px solid var(--border-glass)',
+                            backgroundColor: selectedBlock?.id === block.id ? 'var(--accent-purple-glow)' : (index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent'),
+                            cursor: 'pointer'
+                          }}
+                          className={highlightId === block.id ? 'flash-highlight' : ''}
+                        >
+                          <td style={{ padding: '8px' }}>
+                            <img 
+                              src={block.iconFilename ? `/game_icons/${block.iconFilename}` : `/game_icons/default.png`} 
+                              alt=""
+                              style={{ width: '48px', height: '48px' }}
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                          </td>
+                          <td style={{ padding: '8px' }}>
+                            <div style={{ fontWeight: 600 }}>{block.name}</div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{block.id}</div>
+                          </td>
+                          <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }}>
+                            {block.unlockResearchList && block.unlockResearchList.length > 0 ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {block.unlockResearchList.map((r, i) => (
+                                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <img 
+                                      src={`/game_icons/${r.iconFile}`} 
+                                      alt="" 
+                                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
+                                      onError={(e) => { e.target.style.display = 'none'; }}
+                                    />
+                                    <span>{r.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span>{formatUnlockText(block.unlockResearch)}</span>
+                            )}
+                          </td>
+                          <td style={{ padding: '8px', fontWeight: 600, color: 'var(--accent-cyan)' }}>+{block.roomQuality}</td>
+                          <td style={{ padding: '8px', color: '#ff8888' }}>{block.toughness || '-'}</td>
+                          <td style={{ padding: '8px' }}>{block.cost} pts</td>
+                          {currentView === 'props' && (
+                            <td style={{ padding: '8px' }}>
+                              {block.isStation ? (
+                                <span style={{ color: '#88ffaa', fontWeight: 'bold' }}>Yes</span>
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)' }}>No</span>
+                              )}
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                      {getSortedBlocks(currentView).length === 0 && (
+                        <tr>
+                          <td colSpan={currentView === 'props' ? '7' : '6'} style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No elements found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
 
-            {/* BLOCK DETAIL DRAWER */}
-            {selectedBlock && (
-              <div className="card" style={{ width: '380px', borderLeft: '2px solid var(--border-glass)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Prop Inspector</span>
-                  <button onClick={() => setSelectedBlock(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ width: '128px', height: '128px', background: 'var(--bg-tertiary)', border: '2px solid var(--border-glass)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyItems: 'center', padding: '12px' }}>
-                    <img src={selectedBlock.iconFilename ? `/game_icons/${selectedBlock.iconFilename}` : `/game_icons/default.png`} style={{ width: '100%', height: '100%' }} alt="" />
-                  </div>
-                  <div>
-                    <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-header)' }}>{selectedBlock.name}</h2>
-                    <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>{selectedBlock.id}</span>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Classification:</span>
-                    <span>{selectedBlock.isStation ? 'Crafting / Functional Prop' : 'Decorative Prop / Furniture'}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Unlocked By:</span>
-                    <span>
-                      {selectedBlock.unlockResearchList && selectedBlock.unlockResearchList.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                          {selectedBlock.unlockResearchList.map((r, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <img 
-                                src={`/game_icons/${r.iconFile}`} 
-                                alt="" 
-                                style={{ width: '64px', height: '64px', borderRadius: '4px' }}
-                                onError={(e) => { e.target.style.display = 'none'; }}
-                              />
-                              <span style={{ color: 'var(--tbl-highlight)', fontWeight: 'bold' }}>{r.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <span style={{ color: 'var(--tbl-highlight)', fontWeight: 'bold' }}>{formatUnlockText(selectedBlock.unlockResearch)}</span>
-                      )}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Room Quality Contribution:</span>
-                    <span style={{ color: 'var(--accent-cyan)', fontWeight: 'bold' }}>+{selectedBlock.roomQuality} points</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Toughness (Durability):</span>
-                    <span>{selectedBlock.toughness || '0'} pts</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Movement Path Cost:</span>
-                    <span>{selectedBlock.cost} cost</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-glass)', paddingBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Atlas Coord (Texture):</span>
-                    <span style={{ fontFamily: 'var(--font-mono)' }}>({selectedBlock.textureX}, {selectedBlock.textureY})</span>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* SHARED INSPECTORS */}
+            {renderItemInspector()}
+            {renderBlockInspector()}
           </div>
         )}
 
