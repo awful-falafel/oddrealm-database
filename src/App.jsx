@@ -86,6 +86,9 @@ function App() {
   // Load database on mount
   useEffect(() => {
     const fetchGlossary = async () => {
+      const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (!isLocalHost) return;
+
       try {
         const res = await fetch(`${API_BASE}/game-data/glossary`);
         const data = await res.json();
