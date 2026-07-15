@@ -565,7 +565,7 @@ function App() {
         valA = a.becomesElderAge !== null && a.becomesElderAge !== undefined ? a.becomesElderAge : 999999999;
         valB = b.becomesElderAge !== null && b.becomesElderAge !== undefined ? b.becomesElderAge : 999999999;
       }
-      if (['health', 'move_speed', 'evasion', 'toughness'].includes(npcsSort.field)) {
+      if (['health', 'move_speed', 'evasion', 'toughness', 'sight_range'].includes(npcsSort.field)) {
         valA = a.attributes?.[npcsSort.field] ?? 0;
         valB = b.attributes?.[npcsSort.field] ?? 0;
       }
@@ -1496,15 +1496,7 @@ function App() {
 
           return (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
-            <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)' }}>
-                  Search Results
-                </h1>
-                <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>
-                  {searchResultsAll.length} result{searchResultsAll.length !== 1 ? 's' : ''} for <span style={{ color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)' }}>"{searchQuery}"</span>
-                </p>
-              </div>
+            <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
               <button
                 onClick={() => { setCurrentView('animal_products'); setSearchQuery(''); setSearchResults([]); setSearchResultsAll([]); setShowSearchView(false); }}
                 style={{
@@ -1629,64 +1621,6 @@ function App() {
           <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px', overflow: 'hidden' }}>
               
-              {/* HEADER DETAILS & FILTERS */}
-              <div className="content-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h1 className="content-title" style={{ fontFamily: 'var(--font-header)', color: 'var(--accent-cyan)', textTransform: 'capitalize' }}>{currentView}</h1>
-                  <p className="content-subtitle" style={{ fontSize: '0.85rem' }}>
-                    {currentView === 'alcohol' && 'Wines, ciders, beers, and cellared brews.'}
-                    {currentView === 'gear' && 'Helmets, chestplates, greaves, boots, gauntlets, and protective shields.'}
-                    {currentView === 'blocks' && 'Map blocks, walls, terrain floorings, and environment parameters.'}
-                    {currentView === 'fruits' && 'Apples, wild berries, and orchard foods.'}
-                    {currentView === 'fungus' && 'Boletus, blood crown mushrooms, and other fungi.'}
-                    {currentView === 'materials' && 'Wood, ingots, ores, gems, and refined building resources.'}
-                    {currentView === 'meals' && 'Prepared food, cooked stews, and finished kitchen crafts.'}
-                    {currentView === 'other' && 'Miscellaneous items, Ren, raw meats, fish, and drops.'}
-                    {currentView === 'potions' && 'Healing potions, draughts, and magical boosters.'}
-                    {currentView === 'props' && 'Settler furniture, anvils, workbenches, stoves, and decorations.'}
-                    {currentView === 'seeds' && 'Wheat seeds, saplings, crop seeds, and agricultural starters.'}
-                    {currentView === 'statuses' && 'Entity buffs, status effects, and temporary or permanent conditions.'}
-                    {currentView === 'tools' && 'Spoons, pickaxes, axes, chisels, saws, and needles.'}
-                    {currentView === 'vegetables' && 'Broccoli, beetroots, and raw garden crops.'}
-                    {currentView === 'weapons' && 'Swords, bows, daggers, morningstars, and combat tools.'}
-                  </p>
-                </div>
-                
-                {/* Filters */}
-                {(currentView !== 'blocks' && currentView !== 'props') && (
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <select className="filter-select" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>
-                      <option value="all">All Rarities</option>
-                      <option value="common">Common</option>
-                      <option value="uncommon">Uncommon</option>
-                      <option value="rare">Rare</option>
-                      <option value="epic">Epic</option>
-                      <option value="legendary">Legendary</option>
-                    </select>
-
-                    {(currentView === 'weapons' || currentView === 'tools' || currentView === 'gear') && (
-                      <select className="filter-select" value={materialFilter} onChange={(e) => setMaterialFilter(e.target.value)}>
-                        <option value="all">All Materials</option>
-                        {getMaterialsList(glossary, currentView).map(m => <option key={m} value={m}>{m}</option>)}
-                      </select>
-                    )}
-
-                    {currentView === 'gear' && (
-                      <select className="filter-select" value={slotFilter} onChange={(e) => setSlotFilter(e.target.value)}>
-                        <option value="all">All Slots</option>
-                        {getSlotsList(glossary, currentView).map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    )}
-
-                    {currentView === 'materials' && (
-                      <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-                        <option value="all">All Types</option>
-                        {getTypesList(glossary, 'materials').map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                    )}
-                  </div>
-                )}
-              </div>
 
               {/* TABLE CONTAINER */}
               <div style={{ overflowY: 'auto', flex: 1, border: '1px solid var(--border-glass)', borderRadius: '4px' }}>
@@ -1713,6 +1647,7 @@ function App() {
                           <th style={thStyle} onClick={() => handleSortNPCs('health')}>Health{si('health')}</th>
                           <th style={thStyle} onClick={() => handleSortNPCs('move_speed')}>Speed{si('move_speed')}</th>
                           <th style={thStyle} onClick={() => handleSortNPCs('evasion')}>Evasion{si('evasion')}</th>
+                          <th style={thStyle} onClick={() => handleSortNPCs('sight_range')}>View Distance{si('sight_range')}</th>
                           <th style={thStyle} onClick={() => handleSortNPCs('toughness')}>Toughness{si('toughness')}</th>
                           {hasSkills && <th style={thStyle} onClick={() => handleSortNPCs('skills')}>Skills{si('skills')}</th>}
                           {hasProfessions && <th style={thStyle} onClick={() => handleSortNPCs('professions')}>Professions{si('professions')}</th>}
@@ -1777,6 +1712,9 @@ function App() {
                               <td style={{ padding: '8px', color: 'var(--text-secondary)' }}>
                                 {npc.attributes?.evasion != null ? `${npc.attributes.evasion}%` : '—'}
                               </td>
+                              <td style={{ padding: '8px', color: 'var(--text-secondary)' }}>
+                                {npc.attributes?.sight_range ?? '—'}
+                              </td>
                               <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-toughness)' }}>
                                 {npc.attributes?.toughness != null ? `+${npc.attributes.toughness}` : '—'}
                               </td>
@@ -1822,7 +1760,6 @@ function App() {
                           <th style={thStyle} onClick={() => handleSortStatuses('id')}>Status ID{si('id')}</th>
                           <th style={thStyle} onClick={() => handleSortStatuses('description')}>Description{si('description')}</th>
                           <th style={thStyle} onClick={() => handleSortStatuses('discoveryHint')}>Discovery Hint{si('discoveryHint')}</th>
-                          <th style={thStyle} onClick={() => handleSortStatuses('order')}>Order{si('order')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1850,12 +1787,11 @@ function App() {
                               <td style={{ padding: '8px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{status.id}</td>
                               <td style={{ padding: '8px', color: 'var(--text-secondary)' }}>{status.description || '—'}</td>
                               <td style={{ padding: '8px', color: 'var(--text-muted)', fontStyle: 'italic' }}>{status.discoveryHint || '—'}</td>
-                              <td style={{ padding: '8px', color: 'var(--accent-cyan)' }}>{status.order}</td>
                             </tr>
                           );
                         })}
                         {statusesList.length === 0 && (
-                          <tr><td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No statuses found.</td></tr>
+                          <tr><td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No statuses found.</td></tr>
                         )}
                       </tbody>
                     </table>
