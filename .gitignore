@@ -26,3 +26,10 @@ dist-ssr
 # Game asset exports
 game_asset_export/
 
+# Local utility / tools / logs
+AssetRipper.GUI.Free.exe
+app_glossary_cache.json
+edits.json
+temp_test.js
+*Starting.txt
+archive/

@@ -31,6 +31,21 @@ if (fs.existsSync(nestedPath) && fs.lstatSync(nestedPath).isDirectory()) {
   }
 }
 
+function extractYamlField(content, fieldName) {
+  const regex = new RegExp(`^[ \\t]*${fieldName}:([\\s\\S]*?)(?=\\r?\\n  [A-Za-z]+:|$)`, 'm');
+  const match = content.match(regex);
+  if (!match) return '';
+  let val = match[1].trim();
+  if (val.startsWith('|') || val.startsWith('>')) {
+    val = val.slice(1).trim();
+  }
+  if ((val.startsWith("'") && val.endsWith("'")) || (val.startsWith('"') && val.endsWith('"'))) {
+    val = val.slice(1, -1).trim();
+  }
+  val = val.split('\n').map(line => line.trim()).join(' ');
+  return val.replace(/\s+/g, ' ');
+}
+
 console.log('--- STARTING ASSETS PRE-PACKAGING AND BUNDLING COMPILER ---');
 
 if (!fs.existsSync(exportPath)) {
@@ -100,20 +115,49 @@ const blockVisualsDir = path.join(exportPath, 'Assets', 'Resources_moved', 'Data
 console.log('Parsing tooltips and attacks...');
 
 const tooltipsMap = {};
+const statuses = [];
 if (fs.existsSync(tooltipsDir)) {
   fs.readdirSync(tooltipsDir).filter(f => f.endsWith('.asset')).forEach(file => {
-    try {
-      const content = fs.readFileSync(path.join(tooltipsDir, file), 'utf8');
-      const id = content.match(/m_Name:\s*(\w+)/)?.[1] || path.basename(file, '.asset');
-      const nameMatch = content.match(/^\s*Name:\s*([^\r\n]+)/m);
-      if (nameMatch) {
-        let nameStr = nameMatch[1].trim();
-        if ((nameStr.startsWith("'") && nameStr.endsWith("'")) || (nameStr.startsWith('"') && nameStr.endsWith('"'))) {
-          nameStr = nameStr.slice(1, -1).trim();
+      try {
+        const content = fs.readFileSync(path.join(tooltipsDir, file), 'utf8');
+        const id = content.match(/m_Name:\s*(\w+)/)?.[1] || path.basename(file, '.asset');
+        const nameStr = extractYamlField(content, 'Name');
+        if (nameStr) {
+          let descStr = extractYamlField(content, 'Description').replace(/^DiscoveryHint:\s*/i, '').trim();
+          if (descStr === 'DiscoveryHint:') descStr = '';
+
+          let hintStr = extractYamlField(content, 'DiscoveryHint').replace(/^DiscoveryHint:\s*/i, '').trim();
+          if (hintStr === 'DiscoveryHint:') hintStr = '';
+
+          const typeStr = content.match(/Type:\s*(\w+)/)?.[1] || '';
+          const inlineIcon = content.match(/InlineIcon:\s*['"]?(.*?)['"]?$/m)?.[1]?.trim() || '';
+          const order = parseInt(content.match(/Order:\s*(\d+)/)?.[1] || '0');
+          
+          let textColor = null;
+          const rMatch = content.match(/TextColor:\s*\{r:\s*([\d.]+),\s*g:\s*([\d.]+),\s*b:\s*([\d.]+),\s*a:\s*([\d.]+)\}/);
+          if (rMatch) {
+            const r = Math.round(parseFloat(rMatch[1]) * 255);
+            const g = Math.round(parseFloat(rMatch[2]) * 255);
+            const b = Math.round(parseFloat(rMatch[3]) * 255);
+            const a = parseFloat(rMatch[4]);
+            textColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+          }
+
+          tooltipsMap[id] = { name: nameStr, description: descStr, discoveryHint: hintStr, type: typeStr, inlineIcon, textColor, order };
+
+          if (typeStr === 'Status' || id.startsWith('tooltip_entity_status_')) {
+            statuses.push({
+              id: id.replace('tooltip_', ''),
+              name: nameStr,
+              description: descStr,
+              discoveryHint: hintStr,
+              inlineIcon,
+              textColor,
+              order
+            });
+          }
         }
-        tooltipsMap[id] = nameStr;
-      }
-    } catch(e){}
+      } catch(e){}
   });
 }
 
@@ -125,16 +169,35 @@ if (fs.existsSync(attacksDir)) {
       const id = content.match(/m_Name:\s*(\w+)/)?.[1] || path.basename(file, '.asset');
       const min = content.match(/MinAmount:\s*(\d+)/)?.[1] || '0';
       const max = content.match(/MaxAmount:\s*(\d+)/)?.[1] || '0';
-      const range = content.match(/Range:\s*(\d+)/)?.[1] || '1';
+      const range = content.match(/\bRange:\s*(\d+)/)?.[1] || '1';
       const dmgType = content.match(/DamageType:\s*(\d+)/)?.[1] || '2';
       const skillId = content.match(/SkillID:\s*(\w+)/)?.[1] || 'skill_fight_melee';
+      const atkTooltipId = content.match(/TooltipID:\s*(\w+)/)?.[1] || '';
+      const atkName = tooltipsMap[atkTooltipId]?.name || id.replace('attack_', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       attacksMap[id] = { 
-        min: parseInt(min), 
-        max: parseInt(max), 
+        name: atkName,
+        minDamage: parseInt(min), 
+        maxDamage: parseInt(max), 
         range: parseInt(range),
         dmgType: parseInt(dmgType),
         skillId: skillId.replace('skill_fight_', '')
       };
+    } catch(e){}
+  });
+}
+
+const agesMap = {};
+const entityAgeDir = path.join(exportPath, 'Assets', 'Resources_moved', 'Data', 'EntityAge');
+if (fs.existsSync(entityAgeDir)) {
+  fs.readdirSync(entityAgeDir).filter(f => f.endsWith('.asset')).forEach(file => {
+    try {
+      const content = fs.readFileSync(path.join(entityAgeDir, file), 'utf8');
+      const id = content.match(/m_Name:\s*(\w+)/)?.[1] || path.basename(file, '.asset');
+      const min = parseInt(content.match(/\bMin:\s*(\d+)/)?.[1] || '0');
+      const max = parseInt(content.match(/\bMax:\s*(\d+)/)?.[1] || '0');
+      const ageType = parseInt(content.match(/\bAgeType:\s*(\d+)/)?.[1] || '0');
+      const tooltipId = content.match(/TooltipID:\s*(\w+)/)?.[1] || '';
+      agesMap[id] = { min, max, ageType, tooltipId };
     } catch(e){}
   });
 }
@@ -188,6 +251,7 @@ if (fs.existsSync(researchDir)) {
 
 // 6. Parse blueprints to map spawned ID -> unlocking research keys
 const blueprintResearchMap = {};
+const blueprintRecipeMap = {};
 const blueprintsDir = path.join(exportPath, 'Assets', 'Resources_moved', 'Data', 'Blueprints');
 if (fs.existsSync(blueprintsDir)) {
   fs.readdirSync(blueprintsDir).filter(f => f.endsWith('.asset')).forEach(file => {
@@ -196,6 +260,20 @@ if (fs.existsSync(blueprintsDir)) {
       const spawnMatch = content.match(/SpawnTagObjectID:\s*(\w+)/);
       if (!spawnMatch) return;
       const spawnId = spawnMatch[1];
+
+      const ingredients = {};
+      const resourceRegex = /ResourceID:[ \t]*([^\r\n]+)/g;
+      let resMatch;
+      while ((resMatch = resourceRegex.exec(content)) !== null) {
+         const resId = resMatch[1].trim();
+         if (resId) {
+            ingredients[resId] = (ingredients[resId] || 0) + 1;
+         }
+      }
+      if (Object.keys(ingredients).length > 0) {
+         if (!blueprintRecipeMap[spawnId]) blueprintRecipeMap[spawnId] = [];
+         blueprintRecipeMap[spawnId].push(Object.entries(ingredients).map(([id, count]) => ({ id, count })));
+      }
 
       const researchMatches = content.match(/\bResearchKeys:([\s\S]*?)(?=\r?\n  [A-Za-z]+:|$)/);
       if (researchMatches) {
@@ -214,6 +292,17 @@ if (fs.existsSync(blueprintsDir)) {
   });
 }
 
+const resolveRecipe = (id) => {
+  const recipes = blueprintRecipeMap[id];
+  if (!recipes) return null;
+  return recipes.map(recipe => recipe.map(ing => ({
+     id: ing.id,
+     name: tooltipsMap[ing.id] ? tooltipsMap[ing.id].name : ing.id.replace('item_', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+     count: ing.count,
+     iconFile: `sp_${ing.id.replace('item_', '').replace('block_', '')}_icon.png`
+  })));
+};
+
 const resolveResearchList = (id) => {
   const keys = blueprintResearchMap[id] || [];
   return keys.map(key => {
@@ -222,6 +311,11 @@ const resolveResearchList = (id) => {
     
     // Find matching icon file
     let iconFile = 'sp_research_basics0.png'; // default fallback
+    
+    // Hardcoded fallbacks for things that don't follow naming conventions at all
+    if (normKey.includes('ancient_crafting')) {
+      return { name, iconFile: 'sp_research_ancient_aeternum0.png' };
+    }
     try {
       const files = fs.readdirSync(publicIconsDir);
       for (const file of files) {
@@ -232,7 +326,12 @@ const resolveResearchList = (id) => {
           normFile === `${normKey}1` ||
           normFile === normKey.replace('research_', 'sp_research_') ||
           normFile === `${normKey.replace('research_', 'sp_research_')}0` ||
-          normFile === `${normKey.replace('research_', 'sp_research_')}1`
+          normFile === `${normKey.replace('research_', 'sp_research_')}1` ||
+          normFile === normKey.replace(/research_[a-z]+_/, 'sp_research_') ||
+          normFile === `${normKey.replace(/research_[a-z]+_/, 'sp_research_')}0` ||
+          normFile === `${normKey.replace(/research_[a-z]+_/, 'sp_research_')}1` ||
+          normFile === `${normKey.replace('research_artifact_', 'sp_').replace(/\d+$/, '')}_icon` ||
+          normFile === `${normKey.replace('research_artifact_', 'sp_').replace(/\d+$/, '')}0_icon`
         ) {
           iconFile = file;
           break;
@@ -255,8 +354,12 @@ if (fs.existsSync(itemsDir)) {
       if (isEnabled === '0') return;
 
       const id = content.match(/m_Name:\s*(\w+)/)?.[1] || path.basename(file, '.asset');
+      if (id === 'item_none') return;
       const tooltipId = content.match(/TooltipID:\s*(\w+)/)?.[1] || '';
-      const name = tooltipsMap[tooltipId] || id.replace('item_', '').replace(/_/g, ' ');
+      const tooltipObj = tooltipsMap[tooltipId] || {};
+      const name = tooltipObj.name || id.replace('item_', '').replace(/_/g, ' ');
+      let description = tooltipObj.description || '';
+      const discoveryHint = tooltipObj.discoveryHint || '';
       const buyValue = parseInt(content.match(/MerchantBuyValue:\s*(\d+)/)?.[1] || '0');
       const stackSize = parseInt(content.match(/StackSize:\s*(\d+)/)?.[1] || '1');
       const type = content.match(/ItemType:\s*(\w+)/)?.[1] || '';
@@ -291,8 +394,11 @@ if (fs.existsSync(itemsDir)) {
       // Resolve attacks
       const attackMatches = content.match(/\bAttacks:([\s\S]*?)(?=\r?\n  [A-Za-z]+:|$)/);
       const attacksList = [];
+      const attacksDetail = [];
       let minDamage = 0;
       let maxDamage = 0;
+      let maxRange = 0;
+      let isRanged = false;
       if (attackMatches) {
         const attacksText = attackMatches[1];
         const regex = /-\s*(\w+)/g;
@@ -303,11 +409,34 @@ if (fs.existsSync(itemsDir)) {
           if (attData) {
             const nameClean = attId.replace('attack_', '').replace(/_/g, ' ');
             const nameTitle = nameClean.charAt(0).toUpperCase() + nameClean.slice(1);
+            const parts = attId.split('_');
+            const actionWord = parts[parts.length - 1];
+            const cleanActionName = actionWord.charAt(0).toUpperCase() + actionWord.slice(1);
             const dmgTypeLabel = attData.dmgType === 1 ? 'Blunt' : (attData.dmgType === 2 ? 'Slash' : (attData.dmgType === 3 ? 'Pierce' : 'Physical'));
-            attacksList.push(`${nameTitle} (${attData.min}-${attData.max} Dmg, Rng ${attData.range}, ${dmgTypeLabel}, ${attData.skillId})`);
+            attacksList.push(`${nameTitle} (${attData.minDamage}-${attData.maxDamage} Dmg, Rng ${attData.range}, ${dmgTypeLabel}, ${attData.skillId})`);
+            attacksDetail.push({
+              name: cleanActionName,
+              minDamage: attData.minDamage,
+              maxDamage: attData.maxDamage,
+              range: attData.range,
+              dmgType: dmgTypeLabel,
+              skill: attData.skillId
+            });
             
-            if (attData.min > minDamage) minDamage = attData.min;
-            if (attData.max > maxDamage) maxDamage = attData.max;
+            // Append attack tooltip description to item description
+            const attTooltipId = `tooltip_${attId}`;
+            const attTooltipObj = tooltipsMap[attTooltipId];
+            if (attTooltipObj && attTooltipObj.description) {
+              const cleanedAttDesc = attTooltipObj.description.replace(/^DiscoveryHint:\s*/i, '').trim();
+              if (cleanedAttDesc && !description.includes(cleanedAttDesc)) {
+                description = description ? `${description}\n${cleanedAttDesc}` : cleanedAttDesc;
+              }
+            }
+
+            if (attData.minDamage > minDamage) minDamage = attData.minDamage;
+            if (attData.maxDamage > maxDamage) maxDamage = attData.maxDamage;
+            if (attData.range > maxRange) maxRange = attData.range;
+            if (attData.skillId === 'marksmanship' || attData.range > 2) isRanged = true;
           }
         }
       }
@@ -422,12 +551,107 @@ if (fs.existsSync(itemsDir)) {
       }
 
       // Resolve unlocking research nodes
-      const rList = resolveResearchList(id);
+      let rList = resolveResearchList(id);
+
+      // Manual unlock overrides: items whose DiscoveryDependencies in the asset file
+      // don't reflect the real in-game unlock requirements.
+      const unlockOverrides = {
+        // Bottled Water is available via Glass-Work research, not the Clay Tablet
+        'item_water_purified': [{ name: 'Glass-Work', iconFile: 'sp_research_glass0.png' }],
+        // Bucket of Water is available via Wood-Work research
+        'item_water': [{ name: 'Wood-Work', iconFile: 'sp_research_wood0.png' }],
+      };
+      if (unlockOverrides[id]) rList = unlockOverrides[id];
+
       const unlockResearch = rList.map(r => r.name).join(', ') || 'None (Start)';
+
+
+      let minTemp = null;
+      let maxTemp = null;
+      let seasons = [];
+      let growsIntoItem = null;
+      let growsIntoName = null;
+      let lifespan = null;
+      let growthTime = null;
+      
+      if (type === 'tag_item_type_seed') {
+        const plantSpawnIdMatch = content.match(/ActionID:\s*tag_can_plant_(?:seed|tree)[\s\S]*?SpawnID:\s*(\w+)/);
+        if (plantSpawnIdMatch) {
+          const spawnId = plantSpawnIdMatch[1];
+          const plantPath = path.join(exportPath, 'Assets', 'Resources_moved', 'Data', 'BlockPlants', `${spawnId}.asset`);
+          if (fs.existsSync(plantPath)) {
+            const plantContent = fs.readFileSync(plantPath, 'utf8');
+            const minTempMatch = plantContent.match(/MinTemp:\s*(-?\d+)/);
+            const maxTempMatch = plantContent.match(/MaxTemp:\s*(-?\d+)/);
+            if (minTempMatch) minTemp = parseInt(minTempMatch[1]);
+            if (maxTempMatch) maxTemp = parseInt(maxTempMatch[1]);
+
+            const lifeTimeMatch = plantContent.match(/MaxLifeTime:\s*(-?\d+)/);
+            const matureThreshMatch = plantContent.match(/MatureThreshold:\s*([\d\.]+)/);
+            if (lifeTimeMatch) {
+              lifespan = parseInt(lifeTimeMatch[1]);
+              if (lifespan === -1) {
+                growthTime = -1;
+              } else {
+                const thresh = matureThreshMatch ? parseFloat(matureThreshMatch[1]) : 0.5;
+                growthTime = Math.round(lifespan * thresh);
+              }
+            }
+            
+            const seasonsBlock = plantContent.match(/\bSeasons:([\s\S]*?)(?=\r?\n  [A-Za-z]+:|$)/);
+            if (seasonsBlock) {
+              const regex = /-\s*(\w+)/g;
+              let m;
+              while ((m = regex.exec(seasonsBlock[1])) !== null) {
+                seasons.push(m[1].charAt(0).toUpperCase() + m[1].slice(1));
+              }
+            }
+
+            let foundItemDrop = null;
+            const fruitMatch = plantContent.match(/FruitItemDrops:[ \t]*([\w_]+)/);
+            if (fruitMatch && fruitMatch[1]) {
+               foundItemDrop = fruitMatch[1];
+            }
+            if (!foundItemDrop) {
+               const matureMatch = plantContent.match(/MatureItemDrops:[ \t]*([\w_]+)/);
+               if (matureMatch && matureMatch[1]) {
+                  const spawnFile = path.join(exportPath, 'Assets', 'Resources_moved', 'Data', 'TagObjectSpawn', `${matureMatch[1]}.asset`);
+                  if (fs.existsSync(spawnFile)) {
+                     const spawnContent = fs.readFileSync(spawnFile, 'utf8');
+                     const tagObjMatches = [...spawnContent.matchAll(/TagObjectID:[ \t]*([\w_]+)/g)];
+                     for (const m of tagObjMatches) {
+                        if (m[1] && m[1] !== id) {
+                           foundItemDrop = m[1];
+                           break;
+                        }
+                     }
+                  }
+               }
+            }
+            if (!foundItemDrop && spawnId.includes('_sapling')) {
+               const baseTreeName = spawnId.replace('_sapling', '');
+               const leavesFile = path.join(exportPath, 'Assets', 'Resources_moved', 'Data', 'BlockPlants', `${baseTreeName}_leaves.asset`);
+               if (fs.existsSync(leavesFile)) {
+                  const leavesContent = fs.readFileSync(leavesFile, 'utf8');
+                  const fruitMatch2 = leavesContent.match(/FruitItemDrops:[ \t]*([\w_]+)/);
+                  if (fruitMatch2 && fruitMatch2[1]) {
+                     foundItemDrop = fruitMatch2[1];
+                  }
+               }
+            }
+              if (foundItemDrop) {
+                 growsIntoItem = foundItemDrop;
+                 growsIntoName = tooltipsMap[foundItemDrop]?.name || foundItemDrop.replace('item_', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+              }
+          }
+        }
+      }
 
       items.push({
         id,
         name,
+        description,
+        discoveryHint,
         buyValue,
         stackSize,
         type: type.replace('tag_item_type_', ''),
@@ -437,13 +661,24 @@ if (fs.existsSync(itemsDir)) {
         textureY: visualsObj.textureY,
         slots: handsLabel || 'Inventory Only',
         attacks: attacksList.join(', ') || 'None',
+        attacksDetail,
         minDamage,
         maxDamage,
+        maxRange,
+        isRanged,
         toughness,
         actions: actionsList.join(', ') || 'None',
         iconFilename,
         unlockResearch,
-        unlockResearchList: rList
+        unlockResearchList: rList,
+        minTemp,
+        maxTemp,
+        seasons: type === 'tag_item_type_seed' ? (seasons.length > 0 ? seasons.join(', ') : 'Any Season') : null,
+        recipe: resolveRecipe(id),
+        growsIntoItem,
+        growsIntoName,
+        lifespan,
+        growthTime
       });
     } catch (e) {
       console.error(`Failed parsing item ${file}:`, e.message);
@@ -463,7 +698,10 @@ if (fs.existsSync(blocksDir)) {
 
       const id = content.match(/m_Name:\s*(\w+)/)?.[1] || path.basename(file, '.asset');
       const tooltipId = content.match(/TooltipID:\s*(\w+)/)?.[1] || '';
-      const name = tooltipsMap[tooltipId] || id.replace('block_', '').replace(/_/g, ' ');
+      const tooltipObj = tooltipsMap[tooltipId] || {};
+      const name = tooltipObj.name || id.replace('block_', '').replace(/_/g, ' ');
+      const description = tooltipObj.description || '';
+      const discoveryHint = tooltipObj.discoveryHint || '';
       const roomQuality = parseInt(content.match(/RoomQualityAdd:\s*(\d+)/)?.[1] || '0');
       const toughness = parseInt(content.match(/Toughness:\s*(\d+)/)?.[1] || '0');
       const cost = parseInt(content.match(/MovementCost:\s*(\d+)/)?.[1] || '3');
@@ -565,6 +803,8 @@ if (fs.existsSync(blocksDir)) {
       blocks.push({
         id,
         name,
+        description,
+        discoveryHint,
         roomQuality,
         toughness,
         cost,
@@ -573,7 +813,8 @@ if (fs.existsSync(blocksDir)) {
         iconFilename,
         isStation,
         unlockResearch,
-        unlockResearchList: rList
+        unlockResearchList: rList,
+        recipe: resolveRecipe(id)
       });
     } catch(e){}
   });
@@ -629,7 +870,209 @@ blocks.forEach(b => {
   }
 });
 
-const glossaryData = { items, blocks, craftingStations };
+// Compile Races/NPCs
+console.log('Compiling Races...');
+const races = [];
+const racesDir = path.join(exportPath, 'Assets', 'Resources_moved', 'Data', 'Races');
+const entitiesDir = path.join(exportPath, 'Assets', 'Resources_moved', 'Data', 'Entities');
+
+if (fs.existsSync(racesDir)) {
+  fs.readdirSync(racesDir).filter(f => f.endsWith('.asset')).forEach(file => {
+    try {
+      const content = fs.readFileSync(path.join(racesDir, file), 'utf8');
+      const isEnabled = content.match(/m_Enabled:\s*(\d+)/)?.[1];
+      if (isEnabled === '0') return;
+
+      const id = content.match(/m_Name:\s*(\w+)/)?.[1] || path.basename(file, '.asset');
+      const tooltipId = content.match(/TooltipID:\s*(\w+)/)?.[1] || '';
+      const tooltipObj = tooltipsMap[tooltipId] || {};
+      
+      const name = tooltipObj.name || id.replace('race_', '').replace(/_/g, ' ');
+      const namePlural = name + 's'; // default fallback
+      let resolvedNamePlural = namePlural;
+      const tooltipFile = path.join(exportPath, 'Assets', 'Resources_moved', 'Data', 'Tooltips', `${tooltipId}.asset`);
+      let inlineIcon = '';
+      if (fs.existsSync(tooltipFile)) {
+        const tooltipContent = fs.readFileSync(tooltipFile, 'utf8');
+        const pluralMatch = tooltipContent.match(/NamePlural:\s*(.*)/)?.[1]?.trim();
+        if (pluralMatch) resolvedNamePlural = pluralMatch;
+        inlineIcon = tooltipContent.match(/InlineIcon:\s*['"]?(.*?)['"]?$/m)?.[1]?.trim() || '';
+      }
+
+      const description = tooltipObj.description || '';
+      const merchantValue = parseInt(content.match(/MerchantValue:\s*(\d+)/)?.[1] || '0');
+      const intelligence = content.match(/Intelligence:\s*(\w+)/)?.[1]?.replace('intelligence_', '') || 'sapient';
+      
+      // Parse tags
+      const tagsList = [];
+      const tagsBlock = content.match(/\bTags:([\s\S]*?)(?=\r?\n  [A-Za-z]+:|$)/);
+      if (tagsBlock) {
+        const tagRegex = /-\s*(\w+)/g;
+        let m;
+        while ((m = tagRegex.exec(tagsBlock[1])) !== null) tagsList.push(m[1]);
+      }
+
+      // Parse perks
+      const perksList = [];
+      const perksBlock = content.match(/\bPerks:([\s\S]*?)(?=\r?\n  [A-Za-z]+:|$)/);
+      if (perksBlock) {
+        const perkRegex = /-\s*['"]?(.*?)['"]?$/gm;
+        let m;
+        while ((m = perkRegex.exec(perksBlock[1])) !== null) {
+          const val = m[1].replace(/<[^>]+>/g, '').trim();
+          if (val) perksList.push(val);
+        }
+      }
+
+      // Parse starting items
+      const startingItems = [];
+      const startingItemsBlock = content.match(/\bStartingItems:([\s\S]*?)(?=\r?\n  [A-Za-z]+:|$)/);
+      if (startingItemsBlock) {
+        const itemRegex = /ItemID:\s*(\w+)/g;
+        let m;
+        while ((m = itemRegex.exec(startingItemsBlock[1])) !== null) {
+          const itemID = m[1];
+          let itemName = itemID.replace('item_', '').replace(/_/g, ' ');
+          const matchedItem = items.find(it => it.id === itemID);
+          if (matchedItem) itemName = matchedItem.name;
+          startingItems.push({ id: itemID, name: itemName });
+        }
+      }
+
+      // Resolve Entity Details (Attacks, Skills, Professions, Attributes)
+      const defaultEntityId = content.match(/DefaultEntityID:\s*(\w+)/)?.[1] || '';
+      const attacksList = [];
+      const skillsList = [];
+      const professionsList = [];
+      const attributes = {};
+      let becomesAdultAge = null;
+      let becomesElderAge = null;
+
+      if (defaultEntityId) {
+        const entityFile = path.join(entitiesDir, `${defaultEntityId}.asset`);
+        if (fs.existsSync(entityFile)) {
+          const entityContent = fs.readFileSync(entityFile, 'utf8');
+
+          // Attacks with damage ranges
+          const entityAttacksBlock = entityContent.match(/\bAttacks:([\s\S]*?)(?=\r?\n  [A-Za-z]+:|$)/);
+          if (entityAttacksBlock) {
+            const attackRegex = /-\s*(\w+)/g;
+            let m;
+            while ((m = attackRegex.exec(entityAttacksBlock[1])) !== null) {
+              const attackID = m[1];
+              const matchedAttack = attacksMap[attackID];
+              if (matchedAttack) {
+                attacksList.push({
+                  name: matchedAttack.name || attackID.replace('attack_', '').replace(/_/g, ' '),
+                  minDamage: matchedAttack.minDamage || 0,
+                  maxDamage: matchedAttack.maxDamage || 0,
+                  range: matchedAttack.range || 1,
+                });
+              } else {
+                attacksList.push({ name: attackID.replace('attack_', '').replace(/_/g, ' '), minDamage: 0, maxDamage: 0, range: 1 });
+              }
+            }
+          }
+
+          // Skills - only ones PlayerCanEdit = 1
+          const skillBlocks = [...entityContent.matchAll(/SkillID:\s*(\w+)\s*\r?\n\s*PlayerCanEdit:\s*(\d)/g)];
+          for (const sb of skillBlocks) {
+            if (sb[2] === '1') {
+              const sId = sb[1];
+              const sName = sId.replace('skill_', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+              skillsList.push(sName);
+            }
+          }
+
+          // Professions - only ones CanAssign = 1, filter out leadership/meta ones
+          const metaProfessions = new Set(['profession_king','profession_queen','profession_chief','profession_dominus','profession_primarch','profession_none','profession_unassigned','profession_animal']);
+          const profBlocks = [...entityContent.matchAll(/ProfessionID:\s*(\w+)\s*\r?\n\s*CanAssign:\s*(\d)/g)];
+          for (const pb of profBlocks) {
+            if (pb[2] === '1' && !metaProfessions.has(pb[1])) {
+              const pId = pb[1];
+              const pName = pId.replace('profession_', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+              professionsList.push(pName);
+            }
+          }
+
+          // Key attributes: health, move_speed, evasion, toughness
+          const attrKeys = ['attribute_health', 'attribute_move_speed', 'attribute_evasion', 'attribute_toughness', 'attribute_sight_range'];
+          for (const attrId of attrKeys) {
+            const attrMatch = entityContent.match(new RegExp(`AttributeID:\\s*${attrId}\\s*\\r?\\n\\s*StartingBase:\\s*(-?\\d+)`));
+            if (attrMatch) {
+               const shortKey = attrId.replace('attribute_', '');
+               attributes[shortKey] = parseInt(attrMatch[1]);
+             }
+           }
+
+           // Ages and "Becomes Adult" / "Becomes Elder" calculation
+           const entityAgesBlock = entityContent.match(/\bAges:([\s\S]*?)(?=\r?\n  [A-Za-z]+:|$)/);
+           if (entityAgesBlock) {
+             const ageRegex = /-\s*(\w+)/g;
+             let m;
+             while ((m = ageRegex.exec(entityAgesBlock[1])) !== null) {
+               const ageID = m[1];
+               const ageData = agesMap[ageID];
+               if (ageData) {
+                 if (ageData.ageType === 2 || ageID.includes('adult')) {
+                   becomesAdultAge = ageData.min;
+                 } else if (ageData.ageType === 4 || ageID.includes('elder')) {
+                   becomesElderAge = ageData.min;
+                 }
+               }
+             }
+           }
+        }
+      }
+
+      // Resolve icon filename - prefer sp_adult_<entity>_fa0.png portrait
+      const raceBase = id.replace('race_', '');
+      const adultIcon = `sp_adult_${raceBase}_fa0.png`;
+      let finalIcon = '';
+      if (fs.existsSync(path.join(publicIconsDir, adultIcon))) {
+        finalIcon = adultIcon;
+      } else {
+        // Fallback to sp_race_ icon
+        const raceIcon = `sp_race_${raceBase}_icon.png`;
+        if (fs.existsSync(path.join(publicIconsDir, raceIcon))) {
+          finalIcon = raceIcon;
+        } else {
+          const filesInDir = fs.readdirSync(publicIconsDir);
+          const searchBase = raceBase.toLowerCase();
+          for (const file of filesInDir) {
+            const normFile = file.toLowerCase().replace(/\.png$/i, '');
+            if (normFile.includes(searchBase) && normFile.includes('race')) {
+              finalIcon = file;
+              break;
+            }
+          }
+        }
+      }
+
+      races.push({
+        id,
+        name,
+        namePlural: resolvedNamePlural,
+        inlineIcon,
+        description,
+        perks: perksList,
+        merchantValue,
+        intelligence,
+        tags: tagsList,
+        startingItems,
+        attacks: attacksList,
+        skills: skillsList,
+        professions: professionsList,
+        attributes,
+        becomesAdultAge,
+        becomesElderAge,
+        iconFilename: finalIcon || 'default.png'
+      });
+    } catch(e){}
+  });
+}
+
+const glossaryData = { items, blocks, craftingStations, races, statuses };
 fs.writeFileSync(srcDatabasePath, JSON.stringify(glossaryData, null, 2), 'utf8');
-console.log(`Successfully compiled and bundled ${items.length} items, ${blocks.length} blocks, and ${craftingStations.length} crafting stations to ${srcDatabasePath}`);
+console.log(`Successfully compiled and bundled ${items.length} items, ${blocks.length} blocks, ${craftingStations.length} crafting stations, ${races.length} races, and ${statuses.length} statuses to ${srcDatabasePath}`);
 console.log('--- ASSET BUNDLE COMPILING COMPLETE ---');

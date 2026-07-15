@@ -138,10 +138,8 @@ body {
 }
 
 .logo-icon {
-  width: 36px;
-  height: 36px;
-  background-color: var(--bg-tertiary);
-  border: 2px solid var(--accent-cyan);
+  width: 50px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -149,7 +147,11 @@ body {
   font-family: var(--font-mono);
   font-size: 1.4rem;
   color: var(--accent-cyan);
-  box-shadow: 0 0 10px var(--accent-cyan-glow);
+  overflow: hidden;
+}
+
+.logo-icon img {
+  image-rendering: pixelated;
 }
 
 .logo-text {
@@ -182,6 +184,12 @@ body {
   text-align: left;
   font-family: inherit;
   font-size: 0.95rem;
+}
+
+.nav-item img {
+  width: 32px !important;
+  height: 32px !important;
+  image-rendering: pixelated;
 }
 
 .nav-item:hover {
