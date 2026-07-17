@@ -154,10 +154,8 @@ const Sidebar = ({ currentView, resetFilters }) => {
 
       </div>
 
-      <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-        <div>Explorer Version: 3.2.0</div>
-        <div>Data Source: prepackaged</div>
-        <div>Mode: 100% Serverless Offline</div>
+      <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '3px double var(--border-glass)', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.3' }}>
+        This site is unaffiliated with the game Odd Realm or its developers.
       </div>
     </div>
   );
