@@ -496,7 +496,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -1153,7 +1153,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -4204,7 +4204,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -4284,7 +4284,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 1,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -4337,7 +4337,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -5556,7 +5556,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -5728,7 +5728,7 @@
         [
           {
             "id": "tag_item_type_fish",
-            "name": "Tag Type Fish",
+            "name": "Fish",
             "count": 1,
             "iconFile": "sp_tag_type_fish_icon.png"
           },
@@ -5787,7 +5787,7 @@
         [
           {
             "id": "tag_item_type_fish",
-            "name": "Tag Type Fish",
+            "name": "Fish",
             "count": 1,
             "iconFile": "sp_tag_type_fish_icon.png"
           },
@@ -5899,7 +5899,7 @@
         [
           {
             "id": "tag_item_type_fungus",
-            "name": "Tag Type Fungus",
+            "name": "Fungus",
             "count": 3,
             "iconFile": "sp_tag_type_fungus_icon.png"
           }
@@ -5915,7 +5915,7 @@
         [
           {
             "id": "tag_item_type_vegetable",
-            "name": "Tag Type Vegetable",
+            "name": "Vegetable",
             "count": 2,
             "iconFile": "sp_tag_type_vegetable_icon.png"
           }
@@ -6491,7 +6491,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -6943,7 +6943,7 @@
         [
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 3,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -7062,7 +7062,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           },
@@ -10451,7 +10451,7 @@
         [
           {
             "id": "tag_item_type_meat",
-            "name": "Tag Type Meat",
+            "name": "Meat",
             "count": 1,
             "iconFile": "sp_tag_type_meat_icon.png"
           },
@@ -10504,7 +10504,7 @@
         [
           {
             "id": "tag_item_type_meat",
-            "name": "Tag Type Meat",
+            "name": "Meat",
             "count": 1,
             "iconFile": "sp_tag_type_meat_icon.png"
           },
@@ -10557,7 +10557,7 @@
         [
           {
             "id": "tag_item_type_meat",
-            "name": "Tag Type Meat",
+            "name": "Meat",
             "count": 1,
             "iconFile": "sp_tag_type_meat_icon.png"
           },
@@ -10610,7 +10610,7 @@
         [
           {
             "id": "tag_item_type_meat",
-            "name": "Tag Type Meat",
+            "name": "Meat",
             "count": 1,
             "iconFile": "sp_tag_type_meat_icon.png"
           }
@@ -11004,7 +11004,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 1,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -11288,13 +11288,13 @@
         [
           {
             "id": "tag_item_type_fungus",
-            "name": "Tag Type Fungus",
+            "name": "Fungus",
             "count": 3,
             "iconFile": "sp_tag_type_fungus_icon.png"
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -12309,7 +12309,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -12834,7 +12834,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -14809,7 +14809,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -14981,7 +14981,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -15067,7 +15067,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -15147,7 +15147,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -15655,7 +15655,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -18157,7 +18157,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 1,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -18210,13 +18210,13 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -18272,7 +18272,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -18328,7 +18328,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -18384,7 +18384,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -18481,7 +18481,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 1,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -18537,7 +18537,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 1,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -18593,7 +18593,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 1,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -18655,7 +18655,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -18711,7 +18711,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -18775,7 +18775,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -18831,7 +18831,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -18920,7 +18920,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -18976,7 +18976,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -19032,7 +19032,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 1,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -19102,7 +19102,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -19166,7 +19166,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -19222,7 +19222,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -19493,7 +19493,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -20337,7 +20337,7 @@
           },
           {
             "id": "tag_item_type_seed",
-            "name": "Tag Type Seed",
+            "name": "Seed",
             "count": 5,
             "iconFile": "sp_tag_type_seed_icon.png"
           }
@@ -20567,7 +20567,7 @@
           },
           {
             "id": "tag_item_type_remains",
-            "name": "Tag Type Remains",
+            "name": "Remains",
             "count": 2,
             "iconFile": "sp_tag_type_remains_icon.png"
           }
@@ -20713,7 +20713,7 @@
         [
           {
             "id": "tag_item_type_seed",
-            "name": "Tag Type Seed",
+            "name": "Seed",
             "count": 5,
             "iconFile": "sp_tag_type_seed_icon.png"
           }
@@ -20973,7 +20973,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -21083,7 +21083,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 10,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -21107,7 +21107,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 5,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -21535,7 +21535,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -21828,7 +21828,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -21998,7 +21998,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -22054,7 +22054,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -22116,7 +22116,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -22169,7 +22169,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 1,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -22267,7 +22267,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -22323,7 +22323,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -22379,7 +22379,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -22435,7 +22435,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -22497,7 +22497,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -22553,7 +22553,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -22615,7 +22615,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -22671,7 +22671,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -22727,7 +22727,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -22816,7 +22816,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -22863,7 +22863,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 1,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -22919,7 +22919,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -22975,7 +22975,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -23031,7 +23031,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -23087,7 +23087,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -23143,7 +23143,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -23213,7 +23213,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -23269,7 +23269,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 1,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -23325,7 +23325,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -23381,7 +23381,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -23870,7 +23870,7 @@
         [
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           },
@@ -24077,7 +24077,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -24256,7 +24256,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -24306,7 +24306,7 @@
         [
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 5,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -24367,7 +24367,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -24706,7 +24706,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -24962,7 +24962,7 @@
         [
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 5,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -25058,7 +25058,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -25088,7 +25088,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -25118,7 +25118,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -25802,7 +25802,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 1,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -25904,7 +25904,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -26396,7 +26396,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -26468,7 +26468,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           }
@@ -26504,7 +26504,7 @@
           },
           {
             "id": "tag_item_type_water",
-            "name": "Tag Type Water",
+            "name": "Water",
             "count": 1,
             "iconFile": "sp_tag_type_water_icon.png"
           },
@@ -27230,7 +27230,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -27587,7 +27587,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 10,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -27621,7 +27621,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -27651,7 +27651,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 4,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -27681,7 +27681,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 1,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -27717,7 +27717,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 6,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -27747,7 +27747,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -27799,7 +27799,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -27859,7 +27859,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 5,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -27889,7 +27889,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 5,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -27919,7 +27919,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 6,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -27949,7 +27949,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -27979,7 +27979,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28009,7 +28009,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28043,7 +28043,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28073,7 +28073,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28103,7 +28103,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28133,7 +28133,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 4,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -28169,7 +28169,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28199,7 +28199,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28229,7 +28229,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28259,7 +28259,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28289,7 +28289,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28319,7 +28319,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28349,7 +28349,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28379,7 +28379,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 10,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28409,7 +28409,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 10,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28439,7 +28439,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 1,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28469,7 +28469,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28499,7 +28499,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28529,7 +28529,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28559,7 +28559,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 25,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28589,7 +28589,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 6,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28619,7 +28619,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 5,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28679,7 +28679,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28709,7 +28709,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 10,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28739,7 +28739,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 5,
             "iconFile": "sp_tag_type_stone_icon.png"
           }
@@ -28769,7 +28769,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -28847,7 +28847,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -28925,7 +28925,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -28977,7 +28977,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 3,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -29013,7 +29013,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 4,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -29049,7 +29049,7 @@
         [
           {
             "id": "tag_item_type_stone",
-            "name": "Tag Type Stone",
+            "name": "Stone",
             "count": 2,
             "iconFile": "sp_tag_type_stone_icon.png"
           },
@@ -29143,7 +29143,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 4,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29173,7 +29173,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 1,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -29209,7 +29209,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 6,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29239,7 +29239,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -29275,7 +29275,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29335,7 +29335,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29365,7 +29365,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29411,7 +29411,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29441,7 +29441,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29471,7 +29471,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29501,7 +29501,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29531,7 +29531,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29561,7 +29561,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 4,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -29597,7 +29597,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29627,7 +29627,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 5,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29657,7 +29657,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29687,7 +29687,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29717,7 +29717,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 1,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -29753,7 +29753,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29783,7 +29783,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29813,7 +29813,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29843,7 +29843,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29873,7 +29873,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29903,7 +29903,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 1,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29933,7 +29933,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29963,7 +29963,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 3,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -29993,7 +29993,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           },
@@ -30029,7 +30029,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 5,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -30075,7 +30075,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 2,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -30105,7 +30105,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 10,
             "iconFile": "sp_tag_type_wood_icon.png"
           }
@@ -30135,7 +30135,7 @@
         [
           {
             "id": "tag_item_type_wood",
-            "name": "Tag Type Wood",
+            "name": "Wood",
             "count": 5,
             "iconFile": "sp_tag_type_wood_icon.png"
           }

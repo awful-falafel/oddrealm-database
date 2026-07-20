@@ -10,6 +10,23 @@ const publicIconsDir = path.join(__dirname, 'public', 'game_icons');
 const publicAtlasPath = path.join(__dirname, 'public', 'game_atlas.png');
 const srcDatabasePath = path.join(__dirname, 'src', 'glossary_database.json');
 
+// Startup validation: check if export path exists (Item 5)
+if (!fs.existsSync(exportPath)) {
+  console.error(`\x1b[31m[Error]\x1b[0m Game asset export directory not found at: ${exportPath}`);
+  console.error('Please run AssetRipper or update_database.bat first to extract game assets.');
+  process.exit(1);
+}
+
+// Dedicated string normalization helper for clean fallback titles (Item 3)
+const toTitleCase = (str) => {
+  if (!str) return '';
+  return str
+    .replace(/^(item_|block_|prop_|race_|attack_|skill_|profession_|research_|tag_item_type_|tag_)/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase())
+    .trim();
+};
+
 // Auto-hoist if AssetRipper nested the output
 const nestedPath = path.join(exportPath, 'ExportedProject');
 if (fs.existsSync(nestedPath) && fs.lstatSync(nestedPath).isDirectory()) {
@@ -130,7 +147,7 @@ if (fs.existsSync(tooltipsDir)) {
           if (hintStr === 'DiscoveryHint:') hintStr = '';
 
           const typeStr = content.match(/Type:\s*(\w+)/)?.[1] || '';
-          const inlineIcon = content.match(/InlineIcon:\s*['"]?(.*?)['"]?$/m)?.[1]?.trim() || '';
+          const inlineIcon = content.match(/InlineIcon:\s*['"]?([^'"\r\n]+)['"]?\s*$/m)?.[1]?.trim() || '';
           const order = parseInt(content.match(/Order:\s*(\d+)/)?.[1] || '0');
           
           let textColor = null;
@@ -157,7 +174,9 @@ if (fs.existsSync(tooltipsDir)) {
             });
           }
         }
-      } catch(e){}
+      } catch (e) {
+        console.warn(`Failed parsing tooltip file ${file}:`, e.message);
+      }
   });
 }
 
@@ -182,7 +201,9 @@ if (fs.existsSync(attacksDir)) {
         dmgType: parseInt(dmgType),
         skillId: skillId.replace('skill_fight_', '')
       };
-    } catch(e){}
+    } catch (e) {
+      console.warn(`Failed parsing attack file ${file}:`, e.message);
+    }
   });
 }
 
@@ -198,7 +219,9 @@ if (fs.existsSync(entityAgeDir)) {
       const ageType = parseInt(content.match(/\bAgeType:\s*(\d+)/)?.[1] || '0');
       const tooltipId = content.match(/TooltipID:\s*(\w+)/)?.[1] || '';
       agesMap[id] = { min, max, ageType, tooltipId };
-    } catch(e){}
+    } catch (e) {
+      console.warn(`Failed parsing entity age file ${file}:`, e.message);
+    }
   });
 }
 
@@ -211,7 +234,9 @@ if (fs.existsSync(blockVisualsDir)) {
       const tx = content.match(/TextureX:\s*(\d+)/)?.[1] || '0';
       const ty = content.match(/TextureY:\s*(\d+)/)?.[1] || '0';
       visualsMap[id] = { textureX: parseInt(tx), textureY: parseInt(ty) };
-    } catch(e){}
+    } catch (e) {
+      console.warn(`Failed parsing block visual file ${file}:`, e.message);
+    }
   });
 }
 
@@ -245,7 +270,9 @@ if (fs.existsSync(researchDir)) {
         }
       }
       researchNamesMap[id] = humanName;
-    } catch(e){}
+    } catch (e) {
+      console.warn(`Failed parsing research file ${file}:`, e.message);
+    }
   });
 }
 
@@ -288,7 +315,9 @@ if (fs.existsSync(blueprintsDir)) {
           blueprintResearchMap[spawnId] = keys;
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn(`Failed parsing blueprint file ${file}:`, e.message);
+    }
   });
 }
 
@@ -297,7 +326,7 @@ const resolveRecipe = (id) => {
   if (!recipes) return null;
   return recipes.map(recipe => recipe.map(ing => ({
      id: ing.id,
-     name: tooltipsMap[ing.id] ? tooltipsMap[ing.id].name : ing.id.replace('item_', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+     name: tooltipsMap[ing.id] ? tooltipsMap[ing.id].name : toTitleCase(ing.id),
      count: ing.count,
      iconFile: `sp_${ing.id.replace('item_', '').replace('block_', '')}_icon.png`
   })));
@@ -306,7 +335,7 @@ const resolveRecipe = (id) => {
 const resolveResearchList = (id) => {
   const keys = blueprintResearchMap[id] || [];
   return keys.map(key => {
-    const name = researchNamesMap[key] || key.replace('research_', '').replace(/_/g, ' ');
+    const name = researchNamesMap[key] || toTitleCase(key);
     const normKey = key.toLowerCase();
     
     // Find matching icon file
@@ -699,7 +728,7 @@ if (fs.existsSync(blocksDir)) {
       const id = content.match(/m_Name:\s*(\w+)/)?.[1] || path.basename(file, '.asset');
       const tooltipId = content.match(/TooltipID:\s*(\w+)/)?.[1] || '';
       const tooltipObj = tooltipsMap[tooltipId] || {};
-      const name = tooltipObj.name || id.replace('block_', '').replace(/_/g, ' ');
+      const name = tooltipObj.name || toTitleCase(id);
       const description = tooltipObj.description || '';
       const discoveryHint = tooltipObj.discoveryHint || '';
       const roomQuality = parseInt(content.match(/RoomQualityAdd:\s*(\d+)/)?.[1] || '0');
@@ -816,7 +845,9 @@ if (fs.existsSync(blocksDir)) {
         unlockResearchList: rList,
         recipe: resolveRecipe(id)
       });
-    } catch(e){}
+    } catch (e) {
+      console.warn(`Failed parsing block file ${file}:`, e.message);
+    }
   });
 }
 
@@ -887,7 +918,7 @@ if (fs.existsSync(racesDir)) {
       const tooltipId = content.match(/TooltipID:\s*(\w+)/)?.[1] || '';
       const tooltipObj = tooltipsMap[tooltipId] || {};
       
-      const name = tooltipObj.name || id.replace('race_', '').replace(/_/g, ' ');
+      const name = tooltipObj.name || toTitleCase(id);
       const namePlural = name + 's'; // default fallback
       let resolvedNamePlural = namePlural;
       const tooltipFile = path.join(exportPath, 'Assets', 'Resources_moved', 'Data', 'Tooltips', `${tooltipId}.asset`);
@@ -896,7 +927,7 @@ if (fs.existsSync(racesDir)) {
         const tooltipContent = fs.readFileSync(tooltipFile, 'utf8');
         const pluralMatch = tooltipContent.match(/NamePlural:\s*(.*)/)?.[1]?.trim();
         if (pluralMatch) resolvedNamePlural = pluralMatch;
-        inlineIcon = tooltipContent.match(/InlineIcon:\s*['"]?(.*?)['"]?$/m)?.[1]?.trim() || '';
+        inlineIcon = tooltipContent.match(/InlineIcon:\s*['"]?([^'"\r\n]+)['"]?\s*$/m)?.[1]?.trim() || '';
       }
 
       const description = tooltipObj.description || '';
@@ -1068,7 +1099,9 @@ if (fs.existsSync(racesDir)) {
         becomesElderAge,
         iconFilename: finalIcon || 'default.png'
       });
-    } catch(e){}
+    } catch (e) {
+      console.warn(`Failed parsing race file ${file}:`, e.message);
+    }
   });
 }
 
