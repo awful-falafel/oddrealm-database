@@ -1924,12 +1924,12 @@ function App() {
                               </td>
                             )}
                             {currentView === 'seeds' && (
-                              <td style={{ padding: '8px', fontWeight: 600, color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                              <td style={{ padding: '8px', color: 'var(--text-muted)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                                 {item.growthTime !== null ? (item.growthTime === -1 ? 'None' : (ticksToDays(item.growthTime) || item.growthTime)) : '-'}
                               </td>
                             )}
                             {currentView === 'seeds' && (
-                              <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-highlight)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
+                              <td style={{ padding: '8px', color: 'var(--text-muted)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
                                 {item.lifespan !== null ? (item.lifespan === -1 ? 'Infinite' : (ticksToDays(item.lifespan) || item.lifespan)) : '-'}
                               </td>
                             )}
