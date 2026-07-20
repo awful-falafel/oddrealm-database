@@ -5,6 +5,15 @@ import Sidebar from './components/Sidebar';
 
 const API_BASE = 'http://localhost:5000/api';
 
+// 1 in-game day = 1440 ticks
+const TICKS_PER_DAY = 1440;
+const ticksToDays = (ticks) => {
+  if (ticks == null || ticks <= 0) return null;
+  const days = ticks / TICKS_PER_DAY;
+  // Show as integer if whole, otherwise 1 decimal
+  return days % 1 === 0 ? `${days} day${days !== 1 ? 's' : ''}` : `${days.toFixed(1)} days`;
+};
+
 const filterDatabase = (db) => {
   const newDb = { ...db };
   if (newDb.blocks) {
@@ -779,13 +788,13 @@ function App() {
                 {selectedItem.growthTime !== null && selectedItem.growthTime !== undefined && (
                   <div style={{ fontSize: '1rem' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Growth Time: </span>
-                    <span style={{ color: 'var(--accent-cyan)', fontWeight: 'bold' }}>{selectedItem.growthTime === -1 ? 'None' : `${selectedItem.growthTime} ticks`}</span>
+                    <span style={{ color: 'var(--accent-cyan)', fontWeight: 'bold' }}>{selectedItem.growthTime === -1 ? 'None' : (ticksToDays(selectedItem.growthTime) || selectedItem.growthTime)}</span>
                   </div>
                 )}
                 {selectedItem.lifespan !== null && selectedItem.lifespan !== undefined && (
                   <div style={{ fontSize: '1rem' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Lifespan: </span>
-                    <span style={{ color: 'var(--tbl-highlight)', fontWeight: 'bold' }}>{selectedItem.lifespan === -1 ? 'Infinite' : `${selectedItem.lifespan} ticks`}</span>
+                    <span style={{ color: 'var(--tbl-highlight)', fontWeight: 'bold' }}>{selectedItem.lifespan === -1 ? 'Infinite' : (ticksToDays(selectedItem.lifespan) || selectedItem.lifespan)}</span>
                   </div>
                 )}
                 {selectedItem.seasons && (
@@ -1584,7 +1593,7 @@ function App() {
                           </td>
                         )}
                         {hasEffects    && <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(d?.actions)}</td>}
-                        {hasDecayInfo  && <td style={{ padding: '8px', color: 'var(--text-muted)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{d?.decayInfo && d.decayInfo !== 'None' ? (d.decayInfo.match(/\d+/) ? d.decayInfo.match(/\d+/)[0] : d.decayInfo) : '-'}</td>}
+                        {hasDecayInfo  && <td style={{ padding: '8px', color: 'var(--text-muted)' }} className={isBlurred ? 'spoiler-blurred' : ''}>{d?.decayInfo && d.decayInfo !== 'None' ? (d.decayInfo.match(/\d+/) ? (ticksToDays(parseInt(d.decayInfo.match(/\d+/)[0], 10)) || d.decayInfo.match(/\d+/)[0]) : d.decayInfo) : '-'}</td>}
                         {hasRoomQuality && <td style={{ padding: '8px', fontWeight: 600, color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>+{d?.roomQuality ?? 0}</td>}
                         {hasPathCost   && <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{d?.cost != null ? `${d.cost} pts` : '—'}</td>}
                         {hasIsStation  && <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{result.type === 'block' && result.view === 'props' ? (d?.isStation ? <span style={{ color: '#88ffaa', fontWeight: 'bold' }}>Yes</span> : <span style={{ color: 'var(--text-muted)' }}>No</span>) : '—'}</td>}
@@ -1916,12 +1925,12 @@ function App() {
                             )}
                             {currentView === 'seeds' && (
                               <td style={{ padding: '8px', fontWeight: 600, color: 'var(--accent-cyan)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                                {item.growthTime !== null ? (item.growthTime === -1 ? 'None' : item.growthTime) : '-'}
+                                {item.growthTime !== null ? (item.growthTime === -1 ? 'None' : (ticksToDays(item.growthTime) || item.growthTime)) : '-'}
                               </td>
                             )}
                             {currentView === 'seeds' && (
                               <td style={{ padding: '8px', fontWeight: 600, color: 'var(--tbl-highlight)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                                {item.lifespan !== null ? (item.lifespan === -1 ? 'Infinite' : item.lifespan) : '-'}
+                                {item.lifespan !== null ? (item.lifespan === -1 ? 'Infinite' : (ticksToDays(item.lifespan) || item.lifespan)) : '-'}
                               </td>
                             )}
                             {currentView === 'seeds' && (
@@ -1963,7 +1972,7 @@ function App() {
                             <td style={{ padding: '8px' }} className={isBlurred ? 'spoiler-blurred' : ''}>{renderEffectBadges(item.actions)}</td>
                             {hasDecayInfo && (
                               <td style={{ padding: '8px', color: 'var(--text-muted)' }} className={isBlurred ? 'spoiler-blurred' : ''}>
-                                {item.decayInfo && item.decayInfo !== 'None' && !item.decayInfo.includes(' -') ? (item.decayInfo.match(/\d+/) ? item.decayInfo.match(/\d+/)[0] : item.decayInfo) : '-'}
+                                {item.decayInfo && item.decayInfo !== 'None' && !item.decayInfo.includes(' -') ? (item.decayInfo.match(/\d+/) ? (ticksToDays(parseInt(item.decayInfo.match(/\d+/)[0], 10)) || item.decayInfo.match(/\d+/)[0]) : item.decayInfo) : '-'}
                               </td>
                             )}
                             <td style={{ padding: '8px', color: 'var(--tbl-highlight)', fontWeight: 500 }} className={isBlurred ? 'spoiler-blurred' : ''}>
